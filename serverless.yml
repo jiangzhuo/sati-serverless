@@ -1,0 +1,77 @@
+service:
+  name: serverless-nest-example
+
+plugins:
+  - serverless-plugin-typescript
+#  - serverless-plugin-optimize
+  - serverless-offline
+#  - serverless-plugin-warmup
+
+custom:
+  #   # Enable warmup on all functions (only for production and staging)
+  #   warmup:
+  #       - production
+  #       - staging
+  bucketName: sati-serverless-upload-test
+#  serverless-offline:
+#    port: 4000
+
+package:
+  include:
+    - src/**/*.graphqls
+  exclude:
+    - package-lock.json
+    - .gitignore
+    - .git/**
+
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  region: ap-east-1
+  environment:
+    REGION: ${self:provider.region}
+    BUCKET: { Ref: Uploads }
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "s3:*"
+      Resource: "*"
+  apiGateway:
+    binaryMediaTypes:
+      - "multipart/form-data"
+
+functions:
+  main:
+    handler: src/main.handler
+    events:
+      - http:
+          method: any
+          path: /{proxy+}
+  rawUpload:
+    handler: src/upload.handler
+    events:
+      - http:
+          method: post
+          path: /rawUpload
+
+resources:
+  Resources:
+    Uploads:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.bucketName}
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders:
+                - "Authorization"
+              AllowedMethods:
+                - GET
+              AllowedOrigins:
+                - "*"
+            - AllowedHeaders:
+                - "*"
+              AllowedMethods:
+                - PUT
+              AllowedOrigins:
+                - "*"
