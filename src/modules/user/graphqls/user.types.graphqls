@@ -1,0 +1,182 @@
+type Query {
+    "手机号验证码登录"
+    loginBySMSCode(mobile: String!, verificationCode: String!): LoginResponse
+    "手机号密码登录"
+    loginByMobileAndPassword(mobile: String!, password: String!): LoginResponse
+    "发送登录验证码"
+    sendLoginVerificationCode(mobile: String!): UserModuleCommonResult
+    "发送注册验证码"
+    sendRegisterVerificationCode(mobile: String!): UserModuleCommonResult
+    "获取当前用户信息"
+    getCurrentUser: UserResult
+    "根据id获取用户信息"
+    getUserById(id: String!): UserResult
+    "根据mobile获取用户信息"
+    getUserByMobile(mobile: String!): UserResult
+    "获取用户信息列表"
+    getUser(first: Int, after: String): UsersInfoResult
+    "搜索用户"
+    searchUser(keyword: String, page: Int!, limit: Int!): SearchUserResponse
+    "搜索用户分页计数"
+    countUser(keyword: String): CountUserResponse
+    "获取用户的账户数据"
+    searchUserAccount(userId: String!, page: Int!, limit: Int!, type: String!): SearchUserAccountResponse
+    "获取用户的账户数据的分页计数"
+    countUserAccount(userId: String!, type: String!): CountUserAccountResponse
+    "续订更新token"
+    renewToken: LoginResponse
+}
+
+type Mutation {
+    "使用手机号验证码注册"
+    registerBySMSCode(registerUserInput: RegisterUserBySMSCodeInput, verificationCode: String!): UserResult
+    "更新当前用户信息"
+    updateCurrentUser(updateCurrentUserInput: UpdateCurrentUserInput): UserResult
+    "更新用户信息"
+    updateUserById(updateUserInput: UpdateUserInput): UserResult
+    "后台修改balance"
+    changeBalanceByAdmin(userId: String!, changeValue: Int!, extraInfo: String! ): UserResult
+}
+
+input RegisterUserBySMSCodeInput {
+    "手机号。国内手机号位1XX开头，国际/港澳台号码格式为00+国际区号+号码"
+    mobile: String!
+    "密码"
+    password: String!
+    "昵称"
+    nickname: String!
+    "头像的网址，通过上传头像接口获取"
+    avatar: String!
+}
+
+input CreateUserInput {
+    "昵称"
+    nickname: String!
+    "手机号。国内手机号位1XX开头，国际/港澳台号码格式为00+国际区号+号码"
+    mobile: String!
+    "密码"
+    password: String!
+    "头像的网址，通过上传头像接口获取"
+    avatar: String!
+}
+
+input UpdateCurrentUserInput {
+    "昵称"
+    nickname: String
+    "密码"
+    password: String
+    "头像的网址，通过上传头像接口获取"
+    avatar: String
+}
+
+input UpdateUserInput {
+    "唯一id"
+    id: String!
+    "昵称"
+    nickname: String
+    "密码"
+    password: String
+    "头像的网址，通过上传头像接口获取"
+    avatar: String
+    "状态"
+    status: Int
+}
+
+type LoginResponse {
+    code: Int
+    message: String
+    data: AccessToken
+}
+
+type AccessToken {
+    "需要身份验证的接口用的token，放到Header的Authorization中使用"
+    accessToken: String
+    "token过期时间"
+    expiresIn: Int
+}
+
+type UserResult {
+    code: Int
+    message: String
+    data: UserData
+}
+
+type UsersInfoResult {
+    code: Int
+    message: String
+    data: [UserData]
+}
+
+type SearchUserData {
+    total: Int
+    data: [UserData]
+}
+
+type SearchUserResponse {
+    code: Int
+    message: String
+    data: SearchUserData
+}
+
+type CountUserResponse {
+    code: Int
+    message: String
+    data: Int
+}
+
+type SearchUserAccountResponse {
+    code: Int
+    message: String
+    data: [UserAccount]
+}
+
+type CountUserAccountResponse {
+    code: Int
+    message: String
+    data: Int
+}
+
+type UserData {
+    "用户唯一id"
+    id: String
+    "手机号也是唯一的"
+    mobile: String
+    "昵称"
+    nickname: String
+    "头像"
+    avatar: String
+    "状态（暂时没有使用） 以后可能有注销、封禁等等，采用掩码可能同时出于多种状态叠加"
+    status: Int
+    "最后更新时间（暂时没有使用）"
+    updateTime: Int
+    "创建时间"
+    createTime: Int
+    "账户余额"
+    balance: Int
+    "角色"
+    role: Int
+}
+
+type UserAccount {
+    "账户变动记录唯一id"
+    id: String
+    "用户唯一id"
+    userId: String
+    "变换金额"
+    value: Int
+    "变化之后的余额"
+    afterBalance: Int
+    "类型"
+    type: String
+    "创建时间"
+    createTime: Int
+    "额外信息，json格式的字符串"
+    extraInfo: String
+}
+
+type UserModuleCommonResult {
+    # status code
+    code: Int
+    # response message
+    message: String
+}

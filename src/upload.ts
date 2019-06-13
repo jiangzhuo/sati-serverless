@@ -44,7 +44,6 @@ module.exports.handler = function (event, context, callback) {
     const filename = `test/${fileName}`;
 
     // const writeStream = fs.createWriteStream(fileName);
-    // console.log(fileName)
     // writeStream.write(finalFile);
     // writeStream.end();
     // callback(null, { statusCode: 200, body: "ok" })
@@ -67,7 +66,6 @@ module.exports.handler = function (event, context, callback) {
   busboy.write(event.body, 'binary');
   busboy.end();
 
-// console.log(context);
 // callback(null, { statusCode: 200, body: "ok" });
 };
 //# sourceMappingURL=upload.js.map

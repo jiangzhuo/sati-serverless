@@ -14,7 +14,6 @@ export class DownloadController {
   @Get('download/*')
   // @UseInterceptors(FileInterceptor('file'))
   async download(@Param() params) {
-    console.log(params)
     let url = s3.getSignedUrl('getObject', { Bucket: process.env.UPLOAD_BUCKET||'sati-serverless-upload-test', Key: params[0], Expires: 5 });
     return { code: 200, message: 'download/:fileKey', data: url  };
   }

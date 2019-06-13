@@ -28,12 +28,18 @@
     "graphql": "^14.3.1",
     "hasha": "^5.0.0",
     "mime": "^2.4.3",
+    "moment": "^2.24.0",
+    "nodejieba": "^2.3.1",
+    "otplib": "^11.0.1",
+    "pg": "^7.11.0",
     "raw-body": "^2.4.0",
     "reflect-metadata": "^0.1.12",
     "rxjs": "^6.2.2",
+    "shimmer": "^1.2.1",
     "typeorm": "^0.2.17",
     "typescript": "^3.4.5",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "uuid-validate": "^0.0.3"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.15",

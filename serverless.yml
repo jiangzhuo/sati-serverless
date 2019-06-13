@@ -30,6 +30,8 @@ provider:
   runtime: nodejs10.x
   region: ap-east-1
   environment:
+    DEBUG: "typeorm:*"
+    AUTH_TOKEN_SECRET_KEY: "secret_key"
     REGION: ${self:provider.region}
     BUCKET: { Ref: Uploads }
   iamRoleStatements:

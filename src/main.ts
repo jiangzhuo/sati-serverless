@@ -1,3 +1,5 @@
+import './typeorm-monkeypatch';
+import './hackLogger'
 import { Handler, Context } from 'aws-lambda';
 import { Server } from 'http';
 import { createServer, proxy } from 'aws-serverless-express';
@@ -13,7 +15,6 @@ import { AppModule } from './app.module';
 const binaryMimeTypes: string[] = [];
 
 let cachedServer: Server;
-
 process.on('unhandledRejection', (reason) => {
   console.error(reason);
 });

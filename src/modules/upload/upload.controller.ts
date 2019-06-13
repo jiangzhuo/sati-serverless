@@ -39,7 +39,6 @@ export class UploadController {
       });
       file.on('end', function () {
         finalFile = Buffer.concat(buffers);
-        // console.log(finalFile.toString('hex'));
         console.log(`File [${fieldname}] Finished Encoding [${encoding}] MimeType ${mimetype}`);
       });
     });
@@ -61,7 +60,6 @@ export class UploadController {
       })
 
       // const writeStream = fs.createWriteStream(fileName);
-      // console.log(fileName)
       // writeStream.write(finalFile);
       // writeStream.end();
       // return { code: 200, message: 'upload avatar success' };
@@ -100,7 +98,6 @@ export class UploadController {
     console.log(fileName);
     // const writeStream = fs.createWriteStream(fileName);
     // writeStream.write(file.buffer);
-    // console.log(file.buffer.toString())
     // writeStream.end();
 
     let result = await s3.createPresignedPost({
