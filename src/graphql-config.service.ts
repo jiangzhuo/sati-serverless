@@ -11,6 +11,7 @@ export class GraphQLConfigService implements GqlOptionsFactory {
 
     createGqlOptions(): GqlModuleOptions {
         return {
+            introspection: true,
             typePaths: ['./**/*.types.graphqls'],
             // resolvers: { JSON: GraphQLJSON },
             context: async ({ req }) => {

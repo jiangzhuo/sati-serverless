@@ -11,18 +11,28 @@ import { UserEntity } from "./user.entity";
 export class CouponEntity {
   @PrimaryGeneratedColumn("uuid")
   id: number;
-  @Column('text', { default: '' })
+  @Column({ type: 'text', default: '' })
   couponCode: string;
   @Column()
   value: number;
-  @Column('bit', { default: '0' })
+  @Column({ type: 'int', default: 0 })
   status: number;
   @OneToOne(type => UserEntity)
   @JoinColumn()
   user: UserEntity;
-  @CreateDateColumn()
+  @CreateDateColumn({
+    transformer: {
+      to: (value?: number) => (!value ? value : new Date(value * 1000)),
+      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000))
+    }
+  })
   createTime: number;
-  @UpdateDateColumn()
+  @UpdateDateColumn({
+    transformer: {
+      to: (value?: number) => (!value ? value : new Date(value * 1000)),
+      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000))
+    }
+  })
   updateTime: number;
   @Column({ type: "int", default: 0 })
   validTime: number;

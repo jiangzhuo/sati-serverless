@@ -188,9 +188,9 @@ export class HomeService {
       // queryWhere = query.andWhere.bind(query)
     }
     if (first > 0) {
-      query.orderBy('validTime','ASC');
+      query.orderBy("home.validTime",'ASC');
     } else {
-      query.orderBy('validTime','DESC');
+      query.orderBy("home.validTime",'DESC');
     }
     return await query.take(Math.abs(first)).getMany();
   }
@@ -200,7 +200,7 @@ export class HomeService {
     if (isNumber(position)) {
       query.where('position = :position', { position });
     }
-    return await query.orderBy('validTime', 'DESC').skip(from).take(size).getMany();
+    return await query.orderBy("home.validTime", 'DESC').skip(from).take(size).getMany();
   }
 
   async countHome(position?: number) {
@@ -216,8 +216,8 @@ export class HomeService {
   }
 
   async createHome(data) {
-    data.createTime = moment().unix();
-    data.updateTime = moment().unix();
+    // data.createTime = moment().unix();
+    // data.updateTime = moment().unix();
     return await this.homeRepository.create(data)
   }
 

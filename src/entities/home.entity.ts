@@ -22,9 +22,19 @@ export class HomeEntity {
   @ManyToOne(type => UserEntity)
   @JoinColumn({ name: 'author' })
   author: UserEntity;
-  @CreateDateColumn()
+  @CreateDateColumn({
+    transformer: {
+      to: (value?: number) => (!value ? value : new Date(value * 1000)),
+      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000))
+    }
+  })
   createTime: number;
-  @UpdateDateColumn()
+  @UpdateDateColumn({
+    transformer: {
+      to: (value?: number) => (!value ? value : new Date(value * 1000)),
+      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000))
+    }
+  })
   updateTime: number;
   @Column({ type: "int", default: 0 })
   validTime: number;

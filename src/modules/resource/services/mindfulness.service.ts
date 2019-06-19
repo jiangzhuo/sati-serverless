@@ -3,7 +3,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 
 import * as moment from 'moment';
 import { isEmpty, isNumber, isArray, isBoolean, isString } from 'lodash';
-import { AccountEntity, MindfulnessEntity, MindfulnessRecordEntity, ReceiptEntity, UserEntity } from 'src/entities';
+import { AccountEntity, MindfulnessEntity, MindfulnessRecordEntity, ReceiptEntity, UserEntity } from '../../../entities';
 import { InjectRepository, InjectConnection } from '@nestjs/typeorm';
 import { Connection, MoreThanOrEqual, Repository } from 'typeorm';
 import { EntityNotFoundError } from "typeorm/error/EntityNotFoundError";
@@ -25,13 +25,13 @@ export class MindfulnessService {
   // private userServiceInterface;
 
   async sayHello(name: string) {
-    return { msg: `Mindfulness Hello ${name}!` };
+    return `Mindfulness Hello ${name}!`;
   }
 
   async getMindfulness(first = 20, after?: number, before?: number, status = 1) {
     let query = this.mindfulnessRepository.createQueryBuilder("mindfulness");
     let queryWhere = query.where.bind(query);
-    const condition = {};
+    // const condition = {};
     if (after) {
       query = queryWhere("validTime >= :after", { after });
       queryWhere = query.andWhere.bind(query);
@@ -49,12 +49,12 @@ export class MindfulnessService {
     if (status !== 0) {
       query = queryWhere(`(status::bit(${status.toString(2).length}) & :status)::integer = 0`, { status: status.toString(2) });
       query.andWhere.bind(query);
-      condition['status'] = { $bitsAllClear: status }
+      // condition['status'] = { $bitsAllClear: status }
     }
     if (first < 0) {
-      query = query.orderBy("validTime", 'DESC');
+      query = query.orderBy("mindfulness.validTime", 'DESC');
     } else {
-      query = query.orderBy("validTime", 'ASC');
+      query = query.orderBy("mindfulness.validTime", 'ASC');
     }
     return await query.take(Math.abs(first)).getMany();
     // return await this.mindfulnessRepository.find(
@@ -118,9 +118,9 @@ export class MindfulnessService {
     }
     // sort string in '+XXXXX' or '-XXXXX' format
     if (sort.startsWith('-')) {
-      query = query.orderBy(sort.substring(1), 'DESC');
+      query = query.orderBy(`mindfulnessRecord.${sort.substring(1)}`, 'DESC');
     } else if (sort.startsWith('+')) {
-      query = query.orderBy(sort.substring(1), 'ASC');
+      query = query.orderBy(`mindfulnessRecord.${sort.substring(1)}`, 'ASC');
     }
     return await query.take(limit).skip((page - 1) * limit).getMany();
     // return await this.mindfulnessRecordRepository.find(
@@ -130,8 +130,8 @@ export class MindfulnessService {
   }
 
   async createMindfulness(data) {
-    data.createTime = moment().unix();
-    data.updateTime = moment().unix();
+    // data.createTime = moment().unix();
+    // data.updateTime = moment().unix();
     let newMindfulness = this.mindfulnessRepository.create(data);
     let result = await this.mindfulnessRepository.insert(newMindfulness);
     await this.updateTag(result.identifiers[0].id);
@@ -189,7 +189,7 @@ export class MindfulnessService {
     // console.log(updateObject)
     await this.mindfulnessRepository.update(id, updateObject);
     await this.updateTag(id);
-    return await this.mindfulnessRepository.find(id);
+    return await this.mindfulnessRepository.findOne(id);
     // return result
   }
 
@@ -205,7 +205,6 @@ export class MindfulnessService {
   }
 
   async revertDeletedMindfulness(id) {
-
     await this.mindfulnessRepository.createQueryBuilder('mindfulness')
       .update().set({
         status: () => `"status" | B'01111111111111111111111111111110'`

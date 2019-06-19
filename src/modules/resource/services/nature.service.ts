@@ -94,8 +94,8 @@ export class NatureService {
     }
 
     async createNature(data) {
-        data.createTime = moment().unix();
-        data.updateTime = moment().unix();
+        // data.createTime = moment().unix();
+        // data.updateTime = moment().unix();
         let result = await this.natureModel.create(data);
         await this.updateTag(result._id);
         return result;

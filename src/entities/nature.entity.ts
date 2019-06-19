@@ -22,9 +22,19 @@ export class NatureEntity {
   scenes: SceneEntity[];
   @Column('float', { default: 0 })
   price: number;
-  @CreateDateColumn()
+  @CreateDateColumn({
+    transformer: {
+      to: (value?: number) => (!value ? value : new Date(value * 1000)),
+      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000))
+    }
+  })
   createTime: number;
-  @UpdateDateColumn()
+  @UpdateDateColumn({
+    transformer: {
+      to: (value?: number) => (!value ? value : new Date(value * 1000)),
+      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000))
+    }
+  })
   updateTime: number;
   @ManyToOne(type => UserEntity)
   @JoinColumn({ name: 'author' })
@@ -36,10 +46,10 @@ export class NatureEntity {
   @ManyToMany(type => NatureAlbumEntity)
   @JoinTable()
   natureAlbums: NatureAlbumEntity[];
-  @Column({ type: "bit", length: 32, default: "00000000000000000000000000000000" })
+  @Column({ type: "int", default: 0 })
   status: number;
   @Column({ type: "int", default: 0 })
   validTime: number;
-  @Column({ type: "text", array: true, default: [] })
+  @Column({ type: "text", array: true, default: '{}' })
   __tag: string[];
 }

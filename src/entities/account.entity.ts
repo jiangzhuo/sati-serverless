@@ -20,7 +20,12 @@ export class AccountEntity {
   afterBalance: number;
   @Column()
   type: string;
-  @CreateDateColumn()
+  @CreateDateColumn({
+    transformer: {
+      to: (value?: number) => (!value ? value : new Date(value * 1000)),
+      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000))
+    }
+  })
   createTime: number;
   @Column('text')
   extraInfo: string;

@@ -33,7 +33,8 @@ provider:
     DEBUG: "typeorm:*"
     AUTH_TOKEN_SECRET_KEY: "secret_key"
     REGION: ${self:provider.region}
-    BUCKET: { Ref: Uploads }
+    BUCKET: ${self:custom.bucketName}
+    UPLOAD_BUCKET: ${self:custom.bucketName}
   iamRoleStatements:
     - Effect: "Allow"
       Action:

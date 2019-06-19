@@ -99,8 +99,8 @@ export class WanderService {
     }
 
     async createWander(data) {
-        data.createTime = moment().unix();
-        data.updateTime = moment().unix();
+        // data.createTime = moment().unix();
+        // data.updateTime = moment().unix();
         const result = await this.wanderModel.create(data);
         await this.updateTag(result._id);
         return result;

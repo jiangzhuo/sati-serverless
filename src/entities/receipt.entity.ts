@@ -27,8 +27,19 @@ export class ReceiptEntity {
   validateData: string;
   @Column('text')
   purchaseData: string;
-  @CreateDateColumn()
+    @CreateDateColumn({
+    transformer: {
+      to: (value?: number) => (!value ? value : new Date(value * 1000)),
+      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000))
+    }
+  })
+
   createTime: number;
-  @UpdateDateColumn()
+    @UpdateDateColumn({
+    transformer: {
+      to: (value?: number) => (!value ? value : new Date(value * 1000)),
+      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000))
+    }
+  })
   updateTime: number;
 }

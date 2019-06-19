@@ -99,8 +99,8 @@ export class NatureAlbumService {
     }
 
     async createNatureAlbum(data) {
-        data.createTime = moment().unix();
-        data.updateTime = moment().unix();
+        // data.createTime = moment().unix();
+        // data.updateTime = moment().unix();
         const result = await this.natureAlbumModel.create(data);
         await this.updateTag(result._id);
         return result

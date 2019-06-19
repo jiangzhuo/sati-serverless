@@ -14,14 +14,24 @@ export class UserEntity {
   nickname: string;
   @Column({ length: 100 })
   avatar: string;
-  @Column({ type: "bit", length: 32, default: "00000000000000000000000000000000" })
+  @Column({ type: "int", default: 0 })
   status: number;
-  @CreateDateColumn()
+  @CreateDateColumn({
+    transformer: {
+      to: (value?: number) => (!value ? value : new Date(value * 1000)),
+      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000))
+    }
+  })
   createTime: number;
-  @UpdateDateColumn()
+  @UpdateDateColumn({
+    transformer: {
+      to: (value?: number) => (!value ? value : new Date(value * 1000)),
+      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000))
+    }
+  })
   updateTime: number;
   @Column('integer', { default: 0 })
   balance: number;
-  @Column({ type: "bit", length: 32, default: "00000000000000000000000000000000" })
+  @Column({ type: "int", default: 0 })
   role: number;
 }

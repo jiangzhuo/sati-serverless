@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthService } from './services/auth.service';
 
-import { UserEntity } from '../../entities/user.entity';
+import { UserEntity } from '../../entities';
 import { UserService } from './services/user.service';
 
 // import { AccountEntity } from './entities/account.entity';
@@ -11,7 +11,7 @@ import { UserService } from './services/user.service';
 import { CryptoUtil } from './utils/crypto.util';
 
 import { UserResolver } from "./resolvers/user.resolver";
-import { AccountEntity } from '../../entities/account.entity';
+import { AccountEntity } from '../../entities';
 // import { CouponController } from './controllers/coupon.controller';
 // import { ReceiptEntity } from "./entities/receipt.entity";
 // import { PurchaseEntity } from "./entities/purchase.entity";

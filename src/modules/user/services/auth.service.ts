@@ -78,7 +78,7 @@ export class AuthService {
     /**
      * whitelist
      */
-    const whiteList = JSON.parse(process.env.WHITELIST_OPERATION_NAME || "[]");
+    const whiteList = JSON.parse(process.env.WHITELIST_OPERATION_NAME || `["IntrospectionQuery", "sayHello", "test", "adminTest", "home", "getHome", "getHomeById", "getNew", "loginBySMSCode", "loginByMobileAndPassword", "sendRegisterVerificationCode", "sendLoginVerificationCode", "registerBySMSCode"]`);
     if (req.body.query) {
       const query = gql(req.body.query);
       if (query.definitions.length !== 0 && query.definitions.every((definition) => {
