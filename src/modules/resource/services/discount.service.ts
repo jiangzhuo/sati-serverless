@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { isArray, isEmpty, isNumber } from 'lodash';
-import * as moment from "moment";
-import { DiscountEntity } from "../../../entities";
+import * as moment from 'moment';
+import { DiscountEntity } from '../../../entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -17,7 +17,7 @@ export class DiscountService {
   }
 
   async getDiscount(first = 20, after?: number, before?: number, discount?: number) {
-    let query = await this.discountRepository.createQueryBuilder('discount')
+    let query = await this.discountRepository.createQueryBuilder('discount');
     let queryWhere = query.where.bind(query);
     if (isNumber(after)) {
       query = queryWhere(`beginTime >= :after`, { after });
@@ -31,15 +31,15 @@ export class DiscountService {
       query = queryWhere(`discount <= :discount`, { discount });
     }
     if (first > 0) {
-      query = query.orderBy("discount.beginTime", 'ASC');
+      query = query.orderBy('discount.beginTime', 'ASC');
     } else {
-      query = query.orderBy("discount.beginTime", 'DESC');
+      query = query.orderBy('discount.beginTime', 'DESC');
     }
     return await query.take(Math.abs(first)).getMany();
   }
 
   async getDiscountByFromAndSize(from?: number, size?: number) {
-    return await this.discountRepository.createQueryBuilder('discount').orderBy("discount.beginTime", 'DESC').skip(from).take(size).getMany();
+    return await this.discountRepository.createQueryBuilder('discount').orderBy('discount.beginTime', 'DESC').skip(from).take(size).getMany();
   }
 
   async countDiscount() {
@@ -55,10 +55,9 @@ export class DiscountService {
   }
 
   async getDiscountByResourceId(resourceId, time = moment().unix()) {
-    return await this.discountRepository.createQueryBuilder('discount').where(`resourceId = :resourceId AND beginTime <= :time AND endTime >= :time`, {
-      resourceId,
-      time
-    }).getOne();
+    return await this.discountRepository.createQueryBuilder('discount')
+      .where(`resourceId = :resourceId AND beginTime <= :time AND endTime >= :time`, { resourceId, time })
+      .getOne();
   }
 
   async getDiscountByResourceIds(ids) {
@@ -66,13 +65,13 @@ export class DiscountService {
   }
 
   async createDiscount(data) {
-    let newDiscount = this.discountRepository.create(data);
+    const newDiscount = this.discountRepository.create(data);
     await this.discountRepository.insert(newDiscount);
-    return newDiscount
+    return newDiscount;
   }
 
   async updateDiscount(id, data) {
-    let updateObject = { updateTime: moment().unix() };
+    const updateObject = { updateTime: moment().unix() };
     if (!isEmpty(data.type)) {
       updateObject['type'] = data.type;
     }
@@ -95,10 +94,10 @@ export class DiscountService {
       updateObject['endTime'] = data.endTime;
     }
 
-    let query = this.discountRepository.createQueryBuilder('discount')
+    const query = this.discountRepository.createQueryBuilder('discount');
     await query.update()
       .set(updateObject)
-      .where(`id = :id`,{id}).execute();
+      .where(`id = :id`, { id }).execute();
     return await this.discountRepository.findOne(id);
   }
 

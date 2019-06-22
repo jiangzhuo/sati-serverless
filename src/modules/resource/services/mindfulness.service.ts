@@ -6,7 +6,7 @@ import { isEmpty, isNumber, isArray, isBoolean, isString } from 'lodash';
 import { AccountEntity, MindfulnessEntity, MindfulnessRecordEntity, ReceiptEntity, UserEntity } from '../../../entities';
 import { InjectRepository, InjectConnection } from '@nestjs/typeorm';
 import { Connection, MoreThanOrEqual, Repository } from 'typeorm';
-import { EntityNotFoundError } from "typeorm/error/EntityNotFoundError";
+import { EntityNotFoundError } from 'typeorm/error/EntityNotFoundError';
 
 @Injectable()
 export class MindfulnessService {
@@ -18,7 +18,7 @@ export class MindfulnessService {
     @InjectRepository(UserEntity) private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(AccountEntity) private readonly accountRepository: Repository<AccountEntity>,
     @InjectRepository(MindfulnessEntity) private readonly mindfulnessRepository: Repository<MindfulnessEntity>,
-    @InjectRepository(MindfulnessRecordEntity) private readonly mindfulnessRecordRepository: Repository<MindfulnessRecordEntity>
+    @InjectRepository(MindfulnessRecordEntity) private readonly mindfulnessRecordRepository: Repository<MindfulnessRecordEntity>,
   ) {
   }
 
@@ -29,16 +29,16 @@ export class MindfulnessService {
   }
 
   async getMindfulness(first = 20, after?: number, before?: number, status = 1) {
-    let query = this.mindfulnessRepository.createQueryBuilder("mindfulness");
+    let query = this.mindfulnessRepository.createQueryBuilder('mindfulness');
     let queryWhere = query.where.bind(query);
     // const condition = {};
     if (after) {
-      query = queryWhere("validTime >= :after", { after });
+      query = queryWhere('validTime >= :after', { after });
       queryWhere = query.andWhere.bind(query);
       // condition['validTime'] = { $gt: after }
     }
     if (before) {
-      query = queryWhere("validTime <= :before", { before });
+      query = queryWhere('validTime <= :before', { before });
       queryWhere = query.andWhere.bind(query);
       // if (condition['validTime']) {
       //     condition['validTime']['$lt'] = before
@@ -52,9 +52,9 @@ export class MindfulnessService {
       // condition['status'] = { $bitsAllClear: status }
     }
     if (first < 0) {
-      query = query.orderBy("mindfulness.validTime", 'DESC');
+      query = query.orderBy('mindfulness.validTime', 'DESC');
     } else {
-      query = query.orderBy("mindfulness.validTime", 'ASC');
+      query = query.orderBy('mindfulness.validTime', 'ASC');
     }
     return await query.take(Math.abs(first)).getMany();
     // return await this.mindfulnessRepository.find(
@@ -72,22 +72,21 @@ export class MindfulnessService {
     return await this.mindfulnessRepository.findByIds(ids);
   }
 
-  async getMindfulnessRecord(userId: string, mindfulnessId: string);
-  async getMindfulnessRecord(userId: string, mindfulnessId: string[]);
+  async getMindfulnessRecord(userId: string, mindfulnessId: string|string[]);
   async getMindfulnessRecord(userId, mindfulnessId) {
     if (isArray(mindfulnessId)) {
       return await this.mindfulnessRecordRepository.createQueryBuilder('mindfulnessRecord')
-        .where("userId = :userId", { userId })
-        .andWhere("mindfulnessId IN (:...mindfulnessId)", { mindfulnessId })
+        .where('userId = :userId', { userId })
+        .andWhere('mindfulnessId IN (:...mindfulnessId)', { mindfulnessId })
         .getMany();
       // return await this.mindfulnessRecordRepository.find({
       //   userId: userId,
       //   mindfulnessId: { $in: mindfulnessId }
       // }).exec()
     } else if (typeof mindfulnessId === 'string') {
-      return await this.mindfulnessRecordRepository.createQueryBuilder("mindfulnessRecord")
-        .where("userId = :userId", { userId })
-        .andWhere("mindfulnessId = :mindfulnessId", { mindfulnessId })
+      return await this.mindfulnessRecordRepository.createQueryBuilder('mindfulnessRecord')
+        .where('userId = :userId', { userId })
+        .andWhere('mindfulnessId = :mindfulnessId', { mindfulnessId })
         .getMany();
       // return await this.mindfulnessRecordRepository.findOne({ userId: userId, mindfulnessId: mindfulnessId }).exec()
     }
@@ -112,7 +111,7 @@ export class MindfulnessService {
       // 第一个元素是开始时间 第二个元素是结束时间
       query = queryWhere('boughtTime >= :boughtTimeStart AND boughtTime <= :boughtTimeEnd', {
         boughtTimeStart: boughtTime[0],
-        boughtTimeEnd: boughtTime[1]
+        boughtTimeEnd: boughtTime[1],
       });
       // conditions['boughtTime'] = { $gte: boughtTime[0], $lte: boughtTime[1] }
     }
@@ -132,8 +131,8 @@ export class MindfulnessService {
   async createMindfulness(data) {
     // data.createTime = moment().unix();
     // data.updateTime = moment().unix();
-    let newMindfulness = this.mindfulnessRepository.create(data);
-    let result = await this.mindfulnessRepository.insert(newMindfulness);
+    const newMindfulness = this.mindfulnessRepository.create(data);
+    const result = await this.mindfulnessRepository.insert(newMindfulness);
     await this.updateTag(result.identifiers[0].id);
     return result;
   }
@@ -149,7 +148,7 @@ export class MindfulnessService {
   }
 
   async updateMindfulness(id, data) {
-    let updateObject = { updateTime: moment().unix() };
+    const updateObject = { updateTime: moment().unix() };
     if (isArray(data.scenes)) {
       updateObject['scenes'] = data.scenes;
     }
@@ -197,7 +196,7 @@ export class MindfulnessService {
     // await this.mindfulnessRepository.update(id, { $bit: { status: { or: 0b000000000000000000000000000000001 } } });
     await this.mindfulnessRepository.createQueryBuilder('mindfulness')
       .update().set({
-        status: () => `"status" | B'00000000000000000000000000000001'`
+        status: () => `"status" | B'00000000000000000000000000000001'`,
       })
       .where(`id = :id`, { id })
       .execute();
@@ -207,16 +206,15 @@ export class MindfulnessService {
   async revertDeletedMindfulness(id) {
     await this.mindfulnessRepository.createQueryBuilder('mindfulness')
       .update().set({
-        status: () => `"status" | B'01111111111111111111111111111110'`
+        status: () => `"status" | B'01111111111111111111111111111110'`,
       })
       .where(`id = :id`, { id })
       .execute();
     return await this.mindfulnessRepository.findOne(id);
-    // return await this.mindfulnessRepository.findOneAndUpdate({ _id: id }, { $bit: { status: { and: 0b001111111111111111111111111111110 } } }, { new: true }).exec()
   }
 
   async favoriteMindfulness(userId, mindfulnessId) {
-    let newRecord = new MindfulnessRecordEntity();
+    const newRecord = new MindfulnessRecordEntity();
     newRecord.userId = userId;
     newRecord.mindfulnessId = mindfulnessId;
     await this.mindfulnessRecordRepository.createQueryBuilder('mindfulnessRecord')
@@ -241,7 +239,7 @@ export class MindfulnessService {
     //   startCount: ()=>`'statisCount' + 1`
     // })
 
-    let newRecord = new MindfulnessRecordEntity();
+    const newRecord = new MindfulnessRecordEntity();
     newRecord.userId = userId;
     newRecord.mindfulnessId = mindfulnessId;
     newRecord.lastStartTime = moment().unix();
@@ -251,24 +249,24 @@ export class MindfulnessService {
       .insert()
       .values(newRecord)
       .onConflict(`("userId","mindfulnessId") DO UPDATE SET "startCount" = :startCount, "lastStartTime" = :lastStartTime`)
-      .setParameters({startCount:()=>`"startCount" + 1`})
+      .setParameters({ startCount: () => `"startCount" + 1` })
       .execute();
-    return await this.mindfulnessRecordRepository.findOne({userId,mindfulnessId});
+    return await this.mindfulnessRecordRepository.findOne({ userId, mindfulnessId });
 
   }
 
   async finishMindfulness(userId, mindfulnessId, duration) {
-    let currentRecord = await this.mindfulnessRecordRepository.findOne({
-      userId: userId,
-      mindfulnessId: mindfulnessId
+    const currentRecord = await this.mindfulnessRecordRepository.findOne({
+      userId,
+      mindfulnessId,
     });
-    let updateObj = {
+    const updateObj = {
       finishCount: () => `"finishCount" + 1`,
       totalDuration: () => `"totalDuration" + ${duration}`,
-      lastFinishTime: moment().unix()
+      lastFinishTime: moment().unix(),
     };
     if (duration > currentRecord.longestDuration) {
-      updateObj["longestDuration"] = duration
+      updateObj['longestDuration'] = duration;
     }
 
     // let updateObj = { $inc: { finishCount: 1, totalDuration: duration }, $set: { lastFinishTime: moment().unix() } };
@@ -279,7 +277,7 @@ export class MindfulnessService {
     await this.mindfulnessRecordRepository.createQueryBuilder('mindfulnessRecord')
       .update()
       .set(updateObj)
-      .where(`userId = :userId AND mindfulnessId = :mindfulnessId`,{userId,mindfulnessId})
+      .where(`userId = :userId AND mindfulnessId = :mindfulnessId`, { userId, mindfulnessId })
       .execute();
     return this.mindfulnessRecordRepository.findOne({ userId, mindfulnessId });
     //
@@ -294,26 +292,27 @@ export class MindfulnessService {
 
   async buyMindfulness(userId, mindfulnessId, discount) {
 
-
     let discountVal = 100;
     if (discount) {
-      discountVal = discount.discount
+      discountVal = discount.discount;
     }
     // 检查有没有这个mindfulness
     const mindfulness = await this.getMindfulnessById(mindfulnessId);
-    if (!mindfulness) throw new HttpException('not have this mindfulness', 404);
+    if (!mindfulness) {
+      throw new HttpException('not have this mindfulness', 404);
+    }
     // 检查是不是买过
 
     const oldMindfulness = await this.mindfulnessRecordRepository.findOne({
-      userId: userId,
-      mindfulnessId: mindfulnessId
+      userId,
+      mindfulnessId,
     });
-    if (oldMindfulness && oldMindfulness.boughtTime !== 0)
+    if (oldMindfulness && oldMindfulness.boughtTime !== 0) {
       throw new HttpException('already bought', 400);
-    let finalPrice = Math.floor(mindfulness.price * discountVal / 100);
+    }
+    const finalPrice = Math.floor(mindfulness.price * discountVal / 100);
 
-
-    let runner = this.connection.createQueryRunner();
+    const runner = this.connection.createQueryRunner();
     await runner.connect();
     await runner.startTransaction();
     try {
@@ -321,20 +320,20 @@ export class MindfulnessService {
       // 如果余额不足报错
       const user = await runner.manager.findOneOrFail(UserEntity, {
         id: userId,
-        balance: MoreThanOrEqual(finalPrice)
+        balance: MoreThanOrEqual(finalPrice),
       });
       user.balance -= finalPrice;
       await runner.manager.save(user);
       // 创建account
       await runner.manager.insert(AccountEntity, {
-        userId: userId,
-        value: -1*finalPrice,
+        userId,
+        value: -1 * finalPrice,
         afterBalance: user.balance,
         type: 'mindfulness',
-        extraInfo: JSON.stringify({ resource: mindfulness, discount: discount }),
+        extraInfo: JSON.stringify({ resource: mindfulness, discount }),
       });
 
-      let newRecord = new MindfulnessRecordEntity();
+      const newRecord = new MindfulnessRecordEntity();
       newRecord.userId = userId;
       newRecord.mindfulnessId = mindfulnessId;
       newRecord.boughtTime = moment().unix();
@@ -349,14 +348,14 @@ export class MindfulnessService {
       // console.log(newRecord)
       return newRecord;
     } catch (err) {
-      console.log('err', err)
+      console.log('err', err);
       await runner.rollbackTransaction();
-      if(err instanceof EntityNotFoundError){
+      if (err instanceof EntityNotFoundError) {
         throw new HttpException('not enough balance', 402);
       }
       throw new err;
     } finally {
-      console.log('runner.release()')
+      console.log('runner.release()');
       await runner.release();
     }
   }
@@ -364,8 +363,17 @@ export class MindfulnessService {
   async searchMindfulness(keyword, from, size) {
     const cutKeyword = nodejieba.cut(keyword);
     let query = this.mindfulnessRepository.createQueryBuilder('mindfulness');
+
+    query.select().innerJoin('mindfulness.author', 'author')
+      .innerJoin('mindfulness.scenes', 'scenes')
+      .innerJoin('mindfulness.mindfulnessAlbums', 'mindfulnessAlbums')
+      .innerJoin('mindfulness.natureId', 'natureId');
+    // query.leftJoinAndSelect("mindfulness.author","author")
+    //   .leftJoinAndSelect("mindfulness.scenes","scenes")
+    // .leftJoinAndSelect("mindfulness.mindfulnessAlbums","mindfulnessAlbums")
+    // .leftJoinAndSelect("mindfulness.natureId","natureId");
     if (cutKeyword.length !== 0) {
-      query = query.where(`"__tag" && ARRAY[:...cutKeyword]::text[]`,{cutKeyword})
+      query = query.where(`"__tag" && ARRAY[:...cutKeyword]::text[]`, { cutKeyword });
     }
     // let query = {};
     // if (cutKeyword.length !== 0) {
@@ -374,11 +382,14 @@ export class MindfulnessService {
     // // ARRAY[:...queryCategories]::varchar[]
     // let total = await this.mindfulnessRepository.findAndCount(query);
     // let data = await this.mindfulnessRepository.find(query).skip(from).limit(size).exec();
-    let [data, total] = await query.skip(from).take(size).getManyAndCount();
+    console.log(query.skip(from).take(size).getSql());
+    const [data, total] = await query.skip(from).take(size).getManyAndCount();
+    console.log(data[0]);
+    console.log(await this.mindfulnessRepository.find());
     return { total, data };
   }
 
-  async getMindfulnessByMindfulnessAlbumId(id) {
-    return await this.mindfulnessRepository.find({ mindfulnessAlbums: id });
-  }
+  // async getMindfulnessByMindfulnessAlbumId(id) {
+  //   return await this.mindfulnessRepository.find({ mindfulnessAlbums: id });
+  // }
 }

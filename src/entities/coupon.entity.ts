@@ -3,7 +3,7 @@ import {
   CreateDateColumn,
   Entity, JoinColumn, OneToOne,
   PrimaryGeneratedColumn,
-  UpdateDateColumn
+  UpdateDateColumn,
 } from 'typeorm';
 import { UserEntity } from "./user.entity";
 
@@ -23,15 +23,15 @@ export class CouponEntity {
   @CreateDateColumn({
     transformer: {
       to: (value?: number) => (!value ? value : new Date(value * 1000)),
-      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000))
-    }
+      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000)),
+    },
   })
   createTime: number;
   @UpdateDateColumn({
     transformer: {
       to: (value?: number) => (!value ? value : new Date(value * 1000)),
-      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000))
-    }
+      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000)),
+    },
   })
   updateTime: number;
   @Column({ type: "int", default: 0 })

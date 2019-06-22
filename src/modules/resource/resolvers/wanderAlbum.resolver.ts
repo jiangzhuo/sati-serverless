@@ -11,9 +11,6 @@ import { LoggingInterceptor } from '../../../common/interceptors';
 @UseGuards(AuthGuard)
 @UseInterceptors(LoggingInterceptor)
 export class WanderAlbumResolver {
-    onModuleInit() {
-    }
-
     constructor(
         @InjectBroker() private readonly resourceBroker: ServiceBroker,
         @InjectBroker() private readonly userBroker: ServiceBroker,

@@ -9,7 +9,7 @@ import { S3 } from 'aws-sdk';
 const { REGION: region, BUCKET: bucket } = process.env;
 const s3 = new S3();
 
-module.exports.handler = function (event, context, callback) {
+module.exports.handler = function(event, context, callback) {
   console.log(event.body.length);
 
   let finalFile;
@@ -18,26 +18,26 @@ module.exports.handler = function (event, context, callback) {
   let finalFileStream;
 
   const busboy = new Busboy({ headers: event.headers });
-  busboy.on('file', function (fieldname, file, filename, encoding, mimetype) {
+  busboy.on('file', function(fieldname, file, filename, encoding, mimetype) {
     finalEncoding = encoding;
     finalMimeType = mimetype;
     finalFileStream = file;
 
-    let buffers = [];
+    const buffers = [];
     console.log('File [' + fieldname + ']: filename: ' + filename);
-    file.on('data', function (data) {
-      buffers.push(data)
+    file.on('data', function(data) {
+      buffers.push(data);
       console.log('File [' + fieldname + '] got ' + data.length + ' bytes');
     });
-    file.on('end', function () {
+    file.on('end', function() {
       finalFile = Buffer.concat(buffers);
       console.log(`File [${fieldname}] Finished Encoding [${encoding}] MimeType ${mimetype}`);
     });
   });
-  busboy.on('field', function (fieldname, val, fieldnameTruncated, valTruncated) {
+  busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated) {
     console.log('Field [' + fieldname + ']: value: ' + inspect(val));
   });
-  busboy.on('finish', function () {
+  busboy.on('finish', function() {
     console.log('Done parsing form!');
 
     const fileName = `${hasha(finalFile, { algorithm: 'md5' })}.${mime.getExtension(finalMimeType)}`;
@@ -52,10 +52,10 @@ module.exports.handler = function (event, context, callback) {
       Bucket: bucket,
       Key: `upload/${fileName}`,
       Body: finalFile,
-    }, function (err, data) {
-      console.log(err, data)
-      callback(null,{ statusCode: 200, body: `${fileName} rawUpload avatar success` }) ;
-    })
+    }, function(err, data) {
+      console.log(err, data);
+      callback(null, { statusCode: 200, body: `${fileName} rawUpload avatar success` }) ;
+    });
   });
 
 // const Readable = require('stream').Readable;
@@ -68,4 +68,4 @@ module.exports.handler = function (event, context, callback) {
 
 // callback(null, { statusCode: 200, body: "ok" });
 };
-//# sourceMappingURL=upload.js.map
+// # sourceMappingURL=upload.js.map

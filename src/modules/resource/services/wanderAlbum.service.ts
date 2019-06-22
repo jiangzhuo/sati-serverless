@@ -24,7 +24,7 @@ export class WanderAlbumService {
         @InjectModel('Wander') private readonly wanderModel: Model<Wander>,
         @InjectModel('WanderAlbum') private readonly wanderAlbumModel: Model<WanderAlbum>,
         @InjectModel('WanderRecord') private readonly wanderRecordModel: Model<WanderRecord>,
-        @InjectModel('WanderAlbumRecord') private readonly wanderAlbumRecordModel: Model<WanderAlbumRecord>
+        @InjectModel('WanderAlbumRecord') private readonly wanderAlbumRecordModel: Model<WanderAlbumRecord>,
     ) {
     }
 
@@ -35,35 +35,35 @@ export class WanderAlbumService {
     async getWanderAlbum(first = 20, after?: number, before?: number, status = 1) {
         const condition = {};
         if (after) {
-            condition['validTime'] = { $gt: after }
+            condition['validTime'] = { $gt: after };
         }
         if (before) {
             if (condition['validTime']) {
-                condition['validTime']['$lt'] = before
+                condition['validTime']['$lt'] = before;
             } else {
-                condition['validTime'] = { $lt: before }
+                condition['validTime'] = { $lt: before };
             }
         }
         if (status !== 0) {
-            condition['status'] = { $bitsAllClear: status }
+            condition['status'] = { $bitsAllClear: status };
         }
         let sort = { validTime: 1 };
         if (first < 0) {
-            sort = { validTime: -1 }
+            sort = { validTime: -1 };
         }
         return await this.wanderAlbumModel.find(
             condition,
             null,
-            { sort: sort }
+            { sort },
         ).limit(Math.abs(first)).exec();
     }
 
     async getWanderAlbumById(id) {
-        return await this.wanderAlbumModel.findOne({ _id: id }).exec()
+        return await this.wanderAlbumModel.findOne({ _id: id }).exec();
     }
 
     async getWanderAlbumByIds(ids) {
-        return await this.wanderAlbumModel.find({ _id: { $in: ids } }).exec()
+        return await this.wanderAlbumModel.find({ _id: { $in: ids } }).exec();
     }
 
     async getWanderAlbumRecord(userId: string, wanderAlbumId: string);
@@ -71,32 +71,32 @@ export class WanderAlbumService {
     async getWanderAlbumRecord(userId, wanderAlbumId) {
         if (isArray(wanderAlbumId)) {
             return await this.wanderAlbumRecordModel.find({
-                userId: userId,
-                wanderAlbumId: { $in: wanderAlbumId }
-            }).exec()
+                userId,
+                wanderAlbumId: { $in: wanderAlbumId },
+            }).exec();
         } else if (typeof wanderAlbumId === 'string') {
-            return await this.wanderAlbumRecordModel.findOne({ userId: userId, wanderAlbumId: wanderAlbumId }).exec()
+            return await this.wanderAlbumRecordModel.findOne({ userId, wanderAlbumId }).exec();
         }
     }
 
     async searchWanderAlbumRecord(userId: string, page: number, limit: number, sort: string, favorite?: boolean, boughtTime?: number[]) {
-        let conditions = {}
+        const conditions = {};
         if (isBoolean(favorite)) {
             // 偶数是没有收藏 奇数是收藏，所以true搜索奇数，false搜索偶数
             if (favorite) {
-                conditions['favorite'] = { $mod: [2, 1] }
+                conditions['favorite'] = { $mod: [2, 1] };
             } else {
-                conditions['favorite'] = { $mod: [2, 0] }
+                conditions['favorite'] = { $mod: [2, 0] };
             }
         }
         if (isArray(boughtTime) && boughtTime.length === 2) {
             // 第一个元素是开始时间 第二个元素是结束时间
-            conditions['boughtTime'] = { $gte: boughtTime[0], $lte: boughtTime[1] }
+            conditions['boughtTime'] = { $gte: boughtTime[0], $lte: boughtTime[1] };
         }
         return await this.wanderAlbumRecordModel.find(
             conditions,
             null,
-            { sort: sort, limit: limit, skip: (page - 1) * limit }).exec()
+            { sort, limit, skip: (page - 1) * limit }).exec();
     }
 
     async createWanderAlbum(data) {
@@ -116,7 +116,7 @@ export class WanderAlbumService {
     }
 
     async updateWanderAlbum(id, data) {
-        let updateObject = { updateTime: moment().unix() };
+        const updateObject = { updateTime: moment().unix() };
         if (!isEmpty(data.scenes)) {
             updateObject['scenes'] = data.scenes;
         }
@@ -151,89 +151,90 @@ export class WanderAlbumService {
 
     async deleteWanderAlbum(id) {
         // await this.wanderModel.updateMany({ wanderAlbums: id }, { $pull: { wanderAlbums: id } }).exec();
-        return await this.wanderAlbumModel.findOneAndUpdate({ _id: id }, { $bit: { status: { or: 0b000000000000000000000000000000001 } } }, { new: true }).exec()
+        return await this.wanderAlbumModel.findOneAndUpdate({ _id: id }, { $bit: { status: { or: 0b000000000000000000000000000000001 } } }, { new: true }).exec();
     }
 
     async revertDeletedWanderAlbum(id) {
         // await this.wanderModel.updateMany({ wanderAlbums: id }, { $pull: { wanderAlbums: id } }).exec();
-        return await this.wanderAlbumModel.findOneAndUpdate({ _id: id }, { $bit: { status: { and: 0b001111111111111111111111111111110 } } }, { new: true }).exec()
+        return await this.wanderAlbumModel.findOneAndUpdate({ _id: id }, { $bit: { status: { and: 0b001111111111111111111111111111110 } } }, { new: true }).exec();
     }
 
     async favoriteWanderAlbum(userId, wanderAlbumId) {
-        let result = await this.wanderAlbumRecordModel.findOneAndUpdate({
-            userId: userId,
-            wanderAlbumId: wanderAlbumId
-        }, { $inc: { favorite: 1 } }, { upsert: true, new: true, setDefaultsOnInsert: true }).exec()
-        return result
+        const result = await this.wanderAlbumRecordModel.findOneAndUpdate({
+            userId,
+            wanderAlbumId,
+        }, { $inc: { favorite: 1 } }, { upsert: true, new: true, setDefaultsOnInsert: true }).exec();
+        return result;
     }
 
     async startWanderAlbum(userId, wanderAlbumId) {
-        let result = await this.wanderAlbumRecordModel.findOneAndUpdate({
-                userId: userId,
-                wanderAlbumId: wanderAlbumId
+        const result = await this.wanderAlbumRecordModel.findOneAndUpdate({
+                userId,
+                wanderAlbumId,
             },
             { $inc: { startCount: 1 }, $set: { lastStartTime: moment().unix() } },
             { upsert: true, new: true, setDefaultsOnInsert: true }).exec();
-        return result
+        return result;
     }
 
     async finishWanderAlbum(userId, wanderAlbumId, duration) {
-        let currentRecord = await this.wanderAlbumRecordModel.findOne({ userId: userId, wanderAlbumId: wanderAlbumId });
-        let updateObj = { $inc: { finishCount: 1, totalDuration: duration }, $set: { lastFinishTime: moment().unix() } }
+        const currentRecord = await this.wanderAlbumRecordModel.findOne({ userId, wanderAlbumId });
+        const updateObj = { $inc: { finishCount: 1, totalDuration: duration }, $set: { lastFinishTime: moment().unix() } };
         if (duration > currentRecord.longestDuration) {
-            updateObj.$set['longestDuration'] = duration
+            updateObj.$set['longestDuration'] = duration;
         }
-        let result = await this.wanderAlbumRecordModel.findOneAndUpdate({
-                userId: userId,
-                wanderAlbumId: wanderAlbumId
+        const result = await this.wanderAlbumRecordModel.findOneAndUpdate({
+                userId,
+                wanderAlbumId,
             },
             updateObj,
             { upsert: true, new: true, setDefaultsOnInsert: true }).exec();
-        return result
+        return result;
     }
 
     async buyWanderAlbum(userId, wanderAlbumId, discount) {
         let discountVal = 100;
         if (discount) {
-            discountVal = discount.discount
+            discountVal = discount.discount;
         }
         // 检查有没有这个wander
         const wanderAlbum = await this.getWanderAlbumById(wanderAlbumId);
-        if (!wanderAlbum) throw new MoleculerError('not have this wanderAlbum', 404);
+        if (!wanderAlbum) { throw new MoleculerError('not have this wanderAlbum', 404); }
         // 检查是不是买过
         const oldWanderAlbum = await this.wanderAlbumRecordModel.findOne({
-            userId: userId,
-            wanderAlbumId: wanderAlbumId
+            userId,
+            wanderAlbumId,
         }).exec();
-        if (oldWanderAlbum && oldWanderAlbum.boughtTime !== 0)
+        if (oldWanderAlbum && oldWanderAlbum.boughtTime !== 0) {
             throw new MoleculerError('already bought', 400);
+        }
 
-        let finalPrice = Math.floor(wanderAlbum.price * discountVal / 100);
+        const finalPrice = Math.floor(wanderAlbum.price * discountVal / 100);
 
         const session = await this.resourceClient.startSession();
         session.startTransaction();
         try {
             const user = await this.userModel.findOneAndUpdate({
                 _id: userId,
-                balance: { $gte: finalPrice }
+                balance: { $gte: finalPrice },
             }, { $inc: { balance: -1 * finalPrice } }, { new: true }).session(session).exec();
-            if (!user) throw new MoleculerError('not enough balance', 402);
+            if (!user) { throw new MoleculerError('not enough balance', 402); }
             await this.accountModel.create([{
-                userId: userId,
+                userId,
                 value: -1 * finalPrice,
                 afterBalance: user.balance,
                 type: 'wanderAlbum',
                 createTime: moment().unix(),
-                extraInfo: JSON.stringify({ resource: wanderAlbum, discount: discount }),
-            }], { session: session });
+                extraInfo: JSON.stringify({ resource: wanderAlbum, discount }),
+            }], { session });
             const wanderAlbumRecord = await this.wanderAlbumRecordModel.findOneAndUpdate(
-                { userId: userId, wanderAlbumId: wanderAlbumId },
+                { userId, wanderAlbumId },
                 { $set: { boughtTime: moment().unix() } },
                 { upsert: true, new: true, setDefaultsOnInsert: true }).session(session).exec();
             await session.commitTransaction();
             session.endSession();
 
-            return wanderAlbumRecord
+            return wanderAlbumRecord;
         } catch (error) {
             // If an error occurred, abort the whole transaction and
             // undo any changes that might have happened
@@ -249,8 +250,8 @@ export class WanderAlbumService {
         if (cutKeyword.length !== 0) {
             query = { __tag: { $in: cutKeyword } };
         }
-        let total = await this.wanderAlbumModel.countDocuments(query);
-        let data = await this.wanderAlbumModel.find(query).skip(from).limit(size).exec();
+        const total = await this.wanderAlbumModel.countDocuments(query);
+        const data = await this.wanderAlbumModel.find(query).skip(from).limit(size).exec();
         return { total, data };
     }
 }

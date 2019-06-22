@@ -1,11 +1,10 @@
 import {
   Column, CreateDateColumn, Entity, ManyToMany, PrimaryGeneratedColumn, UpdateDateColumn, OneToMany, JoinTable,
-  ManyToOne, JoinColumn
+  ManyToOne, JoinColumn,
 } from 'typeorm';
 import { SceneEntity } from "./scene.entity";
 import { UserEntity } from "./user.entity";
 import { NatureAlbumEntity } from "./natureAlbum.entity";
-
 
 @Entity('nature')
 export class NatureEntity {
@@ -25,15 +24,15 @@ export class NatureEntity {
   @CreateDateColumn({
     transformer: {
       to: (value?: number) => (!value ? value : new Date(value * 1000)),
-      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000))
-    }
+      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000)),
+    },
   })
   createTime: number;
   @UpdateDateColumn({
     transformer: {
       to: (value?: number) => (!value ? value : new Date(value * 1000)),
-      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000))
-    }
+      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000)),
+    },
   })
   updateTime: number;
   @ManyToOne(type => UserEntity)

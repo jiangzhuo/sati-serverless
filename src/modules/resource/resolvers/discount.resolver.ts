@@ -10,9 +10,6 @@ import { MindfulnessService } from "../services/mindfulness.service";
 @UseGuards(AuthGuard)
 @UseInterceptors(LoggingInterceptor)
 export class DiscountResolver {
-  onModuleInit() {
-  }
-
   constructor(
     @Inject(DiscountService) private readonly discountService: DiscountService,
   ) {
@@ -23,7 +20,7 @@ export class DiscountResolver {
   @Query('sayDiscountHello')
   async sayDiscountHello(req, body: { name: string }) {
     // const { msg } = await this.resourceBroker.call('discount.sayHello', { name: body.name });
-    const msg = this.discountService.sayHello(body.name)
+    const msg = this.discountService.sayHello(body.name);
     return { code: 200, message: 'success', data: msg };
   }
 

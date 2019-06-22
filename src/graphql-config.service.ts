@@ -6,7 +6,7 @@ import { AuthService } from './modules/user/services/auth.service';
 @Injectable()
 export class GraphQLConfigService implements GqlOptionsFactory {
     constructor(
-        @Inject(AuthService) private readonly authService: AuthService
+        @Inject(AuthService) private readonly authService: AuthService,
     ) { }
 
     createGqlOptions(): GqlModuleOptions {
@@ -24,4 +24,3 @@ export class GraphQLConfigService implements GqlOptionsFactory {
         };
     }
 }
-

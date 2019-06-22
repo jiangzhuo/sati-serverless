@@ -18,7 +18,7 @@ export class NatureService {
         @InjectModel('User') private readonly userModel: Model<User>,
         @InjectModel('Account') private readonly accountModel: Model<Account>,
         @InjectModel('Nature') private readonly natureModel: Model<Nature>,
-        @InjectModel('NatureRecord') private readonly natureRecordModel: Model<NatureRecord>
+        @InjectModel('NatureRecord') private readonly natureRecordModel: Model<NatureRecord>,
     ) {
     }
 
@@ -29,35 +29,35 @@ export class NatureService {
     async getNature(first = 20, after?: number, before?: number, status = 1) {
         const condition = {};
         if (after) {
-            condition['validTime'] = { $gt: after }
+            condition['validTime'] = { $gt: after };
         }
         if (before) {
             if (condition['validTime']) {
-                condition['validTime']['$lt'] = before
+                condition['validTime']['$lt'] = before;
             } else {
-                condition['validTime'] = { $lt: before }
+                condition['validTime'] = { $lt: before };
             }
         }
         if (status !== 0) {
-            condition['status'] = { $bitsAllClear: status }
+            condition['status'] = { $bitsAllClear: status };
         }
         let sort = { validTime: 1 };
         if (first < 0) {
-            sort = { validTime: -1 }
+            sort = { validTime: -1 };
         }
         return await this.natureModel.find(
             condition,
             null,
-            { sort: sort }
+            { sort },
         ).limit(Math.abs(first)).exec();
     }
 
     async getNatureById(id) {
-        return await this.natureModel.findOne({ _id: id }).exec()
+        return await this.natureModel.findOne({ _id: id }).exec();
     }
 
     async getNatureByIds(ids) {
-        return await this.natureModel.find({ _id: { $in: ids } }).exec()
+        return await this.natureModel.find({ _id: { $in: ids } }).exec();
     }
 
     async getNatureRecord(userId: string, natureId: string);
@@ -65,38 +65,38 @@ export class NatureService {
     async getNatureRecord(userId, natureId) {
         if (isArray(natureId)) {
             return await this.natureRecordModel.find({
-                userId: userId,
-                natureId: { $in: natureId }
-            }).exec()
+                userId,
+                natureId: { $in: natureId },
+            }).exec();
         } else if (typeof natureId === 'string') {
-            return await this.natureRecordModel.findOne({ userId: userId, natureId: natureId }).exec()
+            return await this.natureRecordModel.findOne({ userId, natureId }).exec();
         }
     }
 
     async searchNatureRecord(userId: string, page: number, limit: number, sort: string, favorite?: boolean, boughtTime?: number[]) {
-        let conditions = {}
+        const conditions = {};
         if (isBoolean(favorite)) {
             // 偶数是没有收藏 奇数是收藏，所以true搜索奇数，false搜索偶数
             if (favorite) {
-                conditions['favorite'] = { $mod: [2, 1] }
+                conditions['favorite'] = { $mod: [2, 1] };
             } else {
-                conditions['favorite'] = { $mod: [2, 0] }
+                conditions['favorite'] = { $mod: [2, 0] };
             }
         }
         if (isArray(boughtTime) && boughtTime.length === 2) {
             // 第一个元素是开始时间 第二个元素是结束时间
-            conditions['boughtTime'] = { $gte: boughtTime[0], $lte: boughtTime[1] }
+            conditions['boughtTime'] = { $gte: boughtTime[0], $lte: boughtTime[1] };
         }
         return await this.natureRecordModel.find(
             conditions,
             null,
-            { sort: sort, limit: limit, skip: (page - 1) * limit }).exec()
+            { sort, limit, skip: (page - 1) * limit }).exec();
     }
 
     async createNature(data) {
         // data.createTime = moment().unix();
         // data.updateTime = moment().unix();
-        let result = await this.natureModel.create(data);
+        const result = await this.natureModel.create(data);
         await this.updateTag(result._id);
         return result;
     }
@@ -110,7 +110,7 @@ export class NatureService {
     }
 
     async updateNature(id, data) {
-        let updateObject = { updateTime: moment().unix() };
+        const updateObject = { updateTime: moment().unix() };
         if (isArray(data.scenes)) {
             updateObject['scenes'] = data.scenes;
         }
@@ -146,87 +146,88 @@ export class NatureService {
         }
         const result = await this.natureModel.findOneAndUpdate({ _id: id }, updateObject, { new: true }).exec();
         await this.updateTag(result._id);
-        return result
+        return result;
     }
 
     async deleteNature(id) {
-        return await this.natureModel.findOneAndUpdate({ _id: id }, { $bit: { status: { or: 0b000000000000000000000000000000001 } } }, { new: true }).exec()
+        return await this.natureModel.findOneAndUpdate({ _id: id }, { $bit: { status: { or: 0b000000000000000000000000000000001 } } }, { new: true }).exec();
     }
 
     async revertDeletedNature(id) {
-        return await this.natureModel.findOneAndUpdate({ _id: id }, { $bit: { status: { and: 0b001111111111111111111111111111110 } } }, { new: true }).exec()
+        return await this.natureModel.findOneAndUpdate({ _id: id }, { $bit: { status: { and: 0b001111111111111111111111111111110 } } }, { new: true }).exec();
     }
 
     async favoriteNature(userId, natureId) {
-        let result = await this.natureRecordModel.findOneAndUpdate({
-            userId: userId,
-            natureId: natureId
-        }, { $inc: { favorite: 1 } }, { upsert: true, new: true, setDefaultsOnInsert: true }).exec()
-        return result
+        const result = await this.natureRecordModel.findOneAndUpdate({
+            userId,
+            natureId,
+        }, { $inc: { favorite: 1 } }, { upsert: true, new: true, setDefaultsOnInsert: true }).exec();
+        return result;
 
     }
 
     async startNature(userId, natureId) {
-        let result = await this.natureRecordModel.findOneAndUpdate({ userId: userId, natureId: natureId },
+        const result = await this.natureRecordModel.findOneAndUpdate({ userId, natureId },
             { $inc: { startCount: 1 }, $set: { lastStartTime: moment().unix() } },
-            { upsert: true, new: true, setDefaultsOnInsert: true }).exec()
-        return result
+            { upsert: true, new: true, setDefaultsOnInsert: true }).exec();
+        return result;
     }
 
     async finishNature(userId, natureId, duration) {
-        let currentRecord = await this.natureRecordModel.findOne({ userId: userId, natureId: natureId });
-        let updateObj = { $inc: { finishCount: 1, totalDuration: duration }, $set: { lastFinishTime: moment().unix() } }
+        const currentRecord = await this.natureRecordModel.findOne({ userId, natureId });
+        const updateObj = { $inc: { finishCount: 1, totalDuration: duration }, $set: { lastFinishTime: moment().unix() } };
         if (duration > currentRecord.longestDuration) {
-            updateObj.$set['longestDuration'] = duration
+            updateObj.$set['longestDuration'] = duration;
         }
-        let result = await this.natureRecordModel.findOneAndUpdate({ userId: userId, natureId: natureId },
+        const result = await this.natureRecordModel.findOneAndUpdate({ userId, natureId },
             updateObj,
-            { upsert: true, new: true, setDefaultsOnInsert: true }).exec()
-        return result
+            { upsert: true, new: true, setDefaultsOnInsert: true }).exec();
+        return result;
     }
 
     async buyNature(userId, natureId, discount) {
         let discountVal = 100;
         if (discount) {
-            discountVal = discount.discount
+            discountVal = discount.discount;
         }
         // 检查有没有这个nature
         const nature = await this.getNatureById(natureId);
-        if (!nature) throw new MoleculerError('not have this nature', 404);
+        if (!nature) { throw new MoleculerError('not have this nature', 404); }
         // 检查是不是买过
         const oldNature = await this.natureRecordModel.findOne({
-            userId: userId,
-            natureId: natureId
+            userId,
+            natureId,
         }).exec();
-        if (oldNature && oldNature.boughtTime !== 0)
+        if (oldNature && oldNature.boughtTime !== 0) {
             throw new MoleculerError('already bought', 400);
+        }
 
-        let finalPrice = Math.floor(nature.price * discountVal / 100);
+        const finalPrice = Math.floor(nature.price * discountVal / 100);
 
         const session = await this.resourceClient.startSession();
         session.startTransaction();
         try {
             const user = await this.userModel.findOneAndUpdate({
                 _id: userId,
-                balance: { $gte: finalPrice }
+                balance: { $gte: finalPrice },
             }, { $inc: { balance: -1 * finalPrice } }, { new: true }).session(session).exec();
-            if (!user) throw new MoleculerError('not enough balance', 402);
+            if (!user) { throw new MoleculerError('not enough balance', 402); }
             await this.accountModel.create([{
-                userId: userId,
+                userId,
                 value: -1 * finalPrice,
                 afterBalance: user.balance,
                 type: 'nature',
                 createTime: moment().unix(),
-                extraInfo: JSON.stringify({ resource: nature, discount: discount }),
-            }], { session: session });
+                extraInfo: JSON.stringify({ resource: nature, discount }),
+            }], { session });
             const natureRecord = await this.natureRecordModel.findOneAndUpdate(
-                { userId: userId, natureId: natureId },
+                { userId, natureId },
                 { $set: { boughtTime: moment().unix() } },
                 { upsert: true, new: true, setDefaultsOnInsert: true }).session(session).exec();
             await session.commitTransaction();
             session.endSession();
 
-            return natureRecord
+            return natureRecord;
         } catch (error) {
             // If an error occurred, abort the whole transaction and
             // undo any changes that might have happened
@@ -242,8 +243,8 @@ export class NatureService {
         if (cutKeyword.length !== 0) {
             query = { __tag: { $in: cutKeyword } };
         }
-        let total = await this.natureModel.countDocuments(query);
-        let data = await this.natureModel.find(query).skip(from).limit(size).exec();
+        const total = await this.natureModel.countDocuments(query);
+        const data = await this.natureModel.find(query).skip(from).limit(size).exec();
         return { total, data };
     }
 

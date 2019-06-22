@@ -15,7 +15,7 @@ export class MindfulnessResolver {
 
   constructor(
     @Inject(MindfulnessService) private readonly mindfulnessService: MindfulnessService,
-    @Inject(DiscountService) private readonly discountService: DiscountService
+    @Inject(DiscountService) private readonly discountService: DiscountService,
   ) {
   }
 

@@ -24,13 +24,13 @@ export class UserService {
     @InjectRepository(AccountEntity) private readonly accountRepository: Repository<AccountEntity>,
     @InjectConnection() private readonly connection: Connection,
     @Inject(forwardRef(() => AuthService)) private readonly authService: AuthService,
-    @Inject(CryptoUtil) private readonly cryptoUtil: CryptoUtil
+    @Inject(CryptoUtil) private readonly cryptoUtil: CryptoUtil,
   ) { }
 
   async updateUser(id: string, updateUserInput: any): Promise<UserEntity> {
     let user = await this.userRepository.findOne(id);
     // if (!user) throw new RpcException({ code: 404, message: t('User does not exist') });
-    if (!user) throw new HttpException('User does not exist', 404);
+    if (!user) { throw new HttpException('User does not exist', 404); }
     if (updateUserInput.nickname) {
       await this.userRepository.update(id, { nickname: updateUserInput.nickname });
     }
@@ -55,12 +55,12 @@ export class UserService {
 
   async loginByMobileAndPassword(mobile: string, password: string) {
     const user = await this.userRepository.findOne({ mobile });
-    if (!user) throw new HttpException('User does not exist', 404);
+    if (!user) { throw new HttpException('User does not exist', 404); }
     if (!await this.cryptoUtil.checkPassword(password, user.password)) {
       // throw new RpcException({ code: 406, message: t('invalid password') });
       throw new HttpException('invalid password', 406);
     }
-    return user
+    return user;
   }
 
   async registerBySMSCode(createUserInput: any): Promise<UserEntity> {
@@ -68,7 +68,7 @@ export class UserService {
     // await this.checkUsernameExist(createUserInput.username);
     // createUserInput.username = createUserInput.username || createUserInput.mobile;
     createUserInput.password = await this.cryptoUtil.encryptPassword(createUserInput.password);
-    let entity = await this.userRepository.create({
+    const entity = await this.userRepository.create({
       mobile: createUserInput.mobile,
       username: createUserInput.mobile,
       password: await this.cryptoUtil.encryptPassword(createUserInput.password),
@@ -76,7 +76,7 @@ export class UserService {
       avatar: createUserInput.avatar,
       status: createUserInput.status,
       balance: 100,
-      role: 0
+      role: 0,
     });
     return await this.userRepository.save(entity);
   }
@@ -86,7 +86,7 @@ export class UserService {
   }
 
   async getUserByIds(ids: string[]): Promise<UserEntity[]> {
-    return await this.userRepository.find({ id: In(ids) })
+    return await this.userRepository.find({ id: In(ids) });
   }
 
   async getUserByMobile(id: string): Promise<UserEntity> {
@@ -106,15 +106,15 @@ export class UserService {
     let query = this.accountRepository.createQueryBuilder('account');
     let queryWhere = query.where;
     if (userId !== '' && uuidValidate(userId)) {
-      query = queryWhere.call(query, 'account.userId = :userId', { userId: userId });
+      query = queryWhere.call(query, 'account.userId = :userId', { userId });
       queryWhere = query.andWhere;
       // conditions['userId'] = userId
     }
     if (type !== '') {
-      query = queryWhere.call(query, 'account.type = :type', { type: type });
+      query = queryWhere.call(query, 'account.type = :type', { type });
       // conditions['type'] = type
     }
-    console.log(query.getSql())
+    console.log(query.getSql());
     query = query.skip((page - 1) * limit).limit(limit);
     return await query.getMany();
   }
@@ -124,15 +124,15 @@ export class UserService {
     let queryWhere = query.where;
     // let conditions = {};
     if (userId !== '' && uuidValidate(userId)) {
-      query = queryWhere.call(query, 'account.userId = :userId', { userId: userId });
-      queryWhere = query.andWhere
+      query = queryWhere.call(query, 'account.userId = :userId', { userId });
+      queryWhere = query.andWhere;
       // conditions['userId'] = userId
     }
     if (type !== '') {
       // conditions['type'] = type
-      query = queryWhere.call(query, 'account.type = :type', { type: type });
+      query = queryWhere.call(query, 'account.type = :type', { type });
     }
-    console.log(query.getQueryAndParameters())
+    console.log(query.getQueryAndParameters());
     // let userAccountTotal = await this.accountModel.countDocuments(conditions).exec();
     // return userAccountTotal
     return await query.getCount();
@@ -143,16 +143,16 @@ export class UserService {
     //
     // });
 
-    let runner = this.connection.createQueryRunner();
+    const runner = this.connection.createQueryRunner();
     await runner.connect();
     await runner.startTransaction();
     try {
       // todo do something
       // 改个人的balance
       // 如果余额不足报错
-      let user = await runner.manager.findOneOrFail(UserEntity, {
-        id: id,
-        balance: MoreThanOrEqual(-1 * changeValue)
+      const user = await runner.manager.findOneOrFail(UserEntity, {
+        id,
+        balance: MoreThanOrEqual(-1 * changeValue),
       });
       user.balance += changeValue;
       await runner.manager.save(user);
@@ -161,31 +161,31 @@ export class UserService {
         userId: id,
         value: changeValue,
         afterBalance: user.balance,
-        type: type,
-        extraInfo: extraInfo,
+        type,
+        extraInfo,
       });
       // changeByIAP类型的修改receiptModel
       if (type === 'changeByIAP') {
-        let extraInfoJSON = JSON.parse(extraInfo);
-        let receiptId = extraInfoJSON.validateData.purchaseRecord.id;
-        let receipt = await runner.manager.findOneOrFail(ReceiptEntity, { id: receiptId });
-        let res = await runner.manager.update(ReceiptEntity,{ receipt: receipt.receipt }, {
-          isProcessed: true
+        const extraInfoJSON = JSON.parse(extraInfo);
+        const receiptId = extraInfoJSON.validateData.purchaseRecord.id;
+        const receipt = await runner.manager.findOneOrFail(ReceiptEntity, { id: receiptId });
+        const res = await runner.manager.update(ReceiptEntity, { receipt: receipt.receipt }, {
+          isProcessed: true,
         });
       }
 
       await runner.commitTransaction();
-      console.log(user)
+      console.log(user);
       return user;
     } catch (err) {
-      console.log('err', err)
+      console.log('err', err);
       await runner.rollbackTransaction();
-      if(err instanceof EntityNotFoundError){
+      if (err instanceof EntityNotFoundError) {
         throw new HttpException('not enough balance', 402);
       }
-      throw new GraphQLError('12')
+      throw new GraphQLError('12');
     } finally {
-      console.log('runner.release()')
+      console.log('runner.release()');
       await runner.release();
     }
 
@@ -234,14 +234,14 @@ export class UserService {
   // }
 
   async searchUser(keyword: string, from: number, size: number): Promise<{ total: number, data: UserEntity[] }> {
-    let query = this.userRepository.createQueryBuilder();
+    const query = this.userRepository.createQueryBuilder();
     if (uuidValidate(keyword)) {
-      query.where('id = :id', { id: keyword })
+      query.where('id = :id', { id: keyword });
     } else {
       query.where('mobile = :mobile', { mobile: keyword })
-        .orWhere('nickname like :nickname', { nickname: `%${keyword}%` })
+        .orWhere('nickname like :nickname', { nickname: `%${keyword}%` });
     }
-    let [user, total] = await query
+    const [user, total] = await query
       .offset(from)
       .limit(size)
       .getManyAndCount();
@@ -255,18 +255,18 @@ export class UserService {
     //   .where('nickname like :keyword',{keyword:`%${keyword}%`})
     //   .getCount();
 
-    return { total: total, data: user };
+    return { total, data: user };
   }
 
   async countUser(keyword: string): Promise<number> {
-    let query = this.userRepository.createQueryBuilder();
+    const query = this.userRepository.createQueryBuilder();
     if (uuidValidate(keyword)) {
-      query.where('id = :id', { id: keyword })
+      query.where('id = :id', { id: keyword });
     } else {
       query.where('mobile = :mobile', { mobile: keyword })
-        .orWhere('nickname like :nickname', { nickname: `%${keyword}%` })
+        .orWhere('nickname like :nickname', { nickname: `%${keyword}%` });
     }
-    let total = await query.getCount();
-    return total
+    const total = await query.getCount();
+    return total;
   }
 }

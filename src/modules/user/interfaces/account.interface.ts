@@ -1,5 +1,4 @@
 
-
 export interface Account {
     readonly userId: string;
     readonly value: number;

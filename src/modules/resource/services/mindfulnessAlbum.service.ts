@@ -19,7 +19,7 @@ export class MindfulnessAlbumService {
     @InjectRepository(UserEntity) private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(AccountEntity) private readonly accountRepository: Repository<AccountEntity>,
     @InjectRepository(MindfulnessAlbumEntity) private readonly mindfulnessAlbumRepository: Repository<MindfulnessAlbumEntity>,
-    @InjectRepository(MindfulnessAlbumRecordEntity) private readonly mindfulnessAlbumRecordRepository: Repository<MindfulnessAlbumRecordEntity>
+    @InjectRepository(MindfulnessAlbumRecordEntity) private readonly mindfulnessAlbumRecordRepository: Repository<MindfulnessAlbumRecordEntity>,
   ) {
   }
 
@@ -91,7 +91,7 @@ export class MindfulnessAlbumService {
       // 第一个元素是开始时间 第二个元素是结束时间
       query = queryWhere('boughtTime >= :boughtTimeStart AND boughtTime <= :boughtTimeEnd', {
         boughtTimeStart: boughtTime[0],
-        boughtTimeEnd: boughtTime[1]
+        boughtTimeEnd: boughtTime[1],
       });
     }
     // sort string in '+XXXXX' or '-XXXXX' format
@@ -106,8 +106,8 @@ export class MindfulnessAlbumService {
   async createMindfulnessAlbum(data) {
     // data.createTime = moment().unix();
     // data.updateTime = moment().unix();
-    let newMindfulnessAlbum = await this.mindfulnessAlbumRepository.create(data);
-    let result = await this.mindfulnessAlbumRepository.insert(newMindfulnessAlbum);
+    const newMindfulnessAlbum = await this.mindfulnessAlbumRepository.create(data);
+    const result = await this.mindfulnessAlbumRepository.insert(newMindfulnessAlbum);
     await this.updateTag(result.identifiers[0].id);
     return result;
   }
@@ -122,7 +122,7 @@ export class MindfulnessAlbumService {
   }
 
   async updateMindfulnessAlbum(id, data) {
-    let updateObject = { updateTime: moment().unix() };
+    const updateObject = { updateTime: moment().unix() };
     if (!isEmpty(data.scenes)) {
       updateObject['scenes'] = data.scenes;
     }
@@ -158,7 +158,7 @@ export class MindfulnessAlbumService {
   async deleteMindfulnessAlbum(id) {
     await this.mindfulnessAlbumRepository.createQueryBuilder('mindfulnessAlbum')
       .update().set({
-        status: () => `"status" | B'00000000000000000000000000000001'`
+        status: () => `"status" | B'00000000000000000000000000000001'`,
       })
       .where(`id = :id`, { id })
       .execute();
@@ -168,7 +168,7 @@ export class MindfulnessAlbumService {
   async revertDeletedMindfulnessAlbum(id) {
     await this.mindfulnessAlbumRepository.createQueryBuilder('mindfulnessAlbum')
       .update().set({
-        status: () => `"status" | B'01111111111111111111111111111110'`
+        status: () => `"status" | B'01111111111111111111111111111110'`,
       })
       .where(`id = :id`, { id })
       .execute();
@@ -176,9 +176,9 @@ export class MindfulnessAlbumService {
   }
 
   async favoriteMindfulnessAlbum(userId, mindfulnessAlbumId) {
-    let newRecord = this.mindfulnessAlbumRecordRepository.create({
-      userId: userId,
-      mindfulnessAlbumId: mindfulnessAlbumId
+    const newRecord = this.mindfulnessAlbumRecordRepository.create({
+      userId,
+      mindfulnessAlbumId,
     });
     await this.mindfulnessAlbumRecordRepository.createQueryBuilder('mindfulnessAlbumRecord')
       .insert()
@@ -190,9 +190,9 @@ export class MindfulnessAlbumService {
   }
 
   async startMindfulnessAlbum(userId, mindfulnessAlbumId) {
-    let newRecord = this.mindfulnessAlbumRecordRepository.create({
-      userId: userId,
-      mindfulnessAlbumId: mindfulnessAlbumId,
+    const newRecord = this.mindfulnessAlbumRecordRepository.create({
+      userId,
+      mindfulnessAlbumId,
       lastStartTime: moment().unix(),
       startCount: 1,
     });
@@ -200,28 +200,28 @@ export class MindfulnessAlbumService {
       .insert()
       .values(newRecord)
       .onConflict(`("userId","mindfulnessAlbumId") DO UPDATE SET "startCount" = :startCount, "lastStartTime" = :lastStartTime`)
-      .setParameters({startCount:()=>`"startCount" + 1`})
+      .setParameters({startCount: () => `"startCount" + 1`})
       .execute();
-    return await this.mindfulnessAlbumRecordRepository.findOne({userId,mindfulnessAlbumId});
+    return await this.mindfulnessAlbumRecordRepository.findOne({userId, mindfulnessAlbumId});
   }
 
   async finishMindfulnessAlbum(userId, mindfulnessAlbumId, duration) {
-    let currentRecord = await this.mindfulnessAlbumRecordRepository.findOne({
-      userId: userId,
-      mindfulnessAlbumId: mindfulnessAlbumId
+    const currentRecord = await this.mindfulnessAlbumRecordRepository.findOne({
+      userId,
+      mindfulnessAlbumId,
     });
-    let updateObj = {
+    const updateObj = {
       finishCount: () => `"finishCount" + 1`,
       totalDuration: () => `"totalDuration" + ${duration}`,
-      lastFinishTime: moment().unix()
+      lastFinishTime: moment().unix(),
     };
     if (duration > currentRecord.longestDuration) {
-      updateObj["longestDuration"] = duration
+      updateObj["longestDuration"] = duration;
     }
     await this.mindfulnessAlbumRecordRepository.createQueryBuilder('mindfulnessAlbumRecord')
       .update()
       .set(updateObj)
-      .where(`userId = :userId AND mindfulnessAlbumId = :mindfulnessAlbumId`,{userId,mindfulnessAlbumId})
+      .where(`userId = :userId AND mindfulnessAlbumId = :mindfulnessAlbumId`, {userId, mindfulnessAlbumId})
       .execute();
     return this.mindfulnessAlbumRecordRepository.findOne({ userId, mindfulnessAlbumId });
   }
@@ -229,21 +229,22 @@ export class MindfulnessAlbumService {
   async buyMindfulnessAlbum(userId, mindfulnessAlbumId, discount) {
     let discountVal = 100;
     if (discount) {
-      discountVal = discount.discount
+      discountVal = discount.discount;
     }
     // 检查有没有这个mindfulnessAlbum
     const mindfulnessAlbum = await this.getMindfulnessAlbumById(mindfulnessAlbumId);
-    if (!mindfulnessAlbum) throw new HttpException('not have this mindfulnessAlbum', 404);
+    if (!mindfulnessAlbum) { throw new HttpException('not have this mindfulnessAlbum', 404); }
     // 检查是不是买过
     const oldMindfulnessAlbum = await this.mindfulnessAlbumRecordRepository.findOne({
-      userId: userId,
-      mindfulnessAlbumId: mindfulnessAlbumId
+      userId,
+      mindfulnessAlbumId,
     });
-    if (oldMindfulnessAlbum && oldMindfulnessAlbum.boughtTime !== 0)
+    if (oldMindfulnessAlbum && oldMindfulnessAlbum.boughtTime !== 0) {
       throw new HttpException('already bought', 400);
-    let finalPrice = Math.floor(mindfulnessAlbum.price * discountVal / 100);
+    }
+    const finalPrice = Math.floor(mindfulnessAlbum.price * discountVal / 100);
 
-    let runner = this.connection.createQueryRunner();
+    const runner = this.connection.createQueryRunner();
     await runner.connect();
     await runner.startTransaction();
     try {
@@ -251,21 +252,21 @@ export class MindfulnessAlbumService {
       // 如果余额不足报错
       const user = await runner.manager.findOneOrFail(UserEntity, {
         id: userId,
-        balance: MoreThanOrEqual(finalPrice)
+        balance: MoreThanOrEqual(finalPrice),
       });
       user.balance -= finalPrice;
       await runner.manager.save(user);
       // 创建account
       await runner.manager.insert(AccountEntity, {
-        userId: userId,
+        userId,
         value: -1 * finalPrice,
         afterBalance: user.balance,
         type: 'mindfulnessAlbum',
-        extraInfo: JSON.stringify({ resource: mindfulnessAlbum, discount: discount }),
+        extraInfo: JSON.stringify({ resource: mindfulnessAlbum, discount }),
       });
-      let newRecord = this.mindfulnessAlbumRecordRepository.create({
-        userId: userId,
-        mindfulnessAlbumId: mindfulnessAlbumId,
+      const newRecord = this.mindfulnessAlbumRecordRepository.create({
+        userId,
+        mindfulnessAlbumId,
         boughtTime: moment().unix(),
       });
 
@@ -279,14 +280,14 @@ export class MindfulnessAlbumService {
       await runner.commitTransaction();
       return newRecord;
     } catch (err) {
-      console.log('err', err)
+      console.log('err', err);
       await runner.rollbackTransaction();
       if (err instanceof EntityNotFoundError) {
         throw new HttpException('not enough balance', 402);
       }
       throw new err;
     } finally {
-      console.log('runner.release()')
+      console.log('runner.release()');
       await runner.release();
     }
   }
@@ -296,9 +297,9 @@ export class MindfulnessAlbumService {
 
     let query = this.mindfulnessAlbumRepository.createQueryBuilder('mindfulnessAlbum');
     if (cutKeyword.length !== 0) {
-      query = query.where(`"__tag" && ARRAY[:...cutKeyword]::text[]`, { cutKeyword })
+      query = query.where(`"__tag" && ARRAY[:...cutKeyword]::text[]`, { cutKeyword });
     }
-    let [data, total] = await query.skip(from).take(size).getManyAndCount();
+    const [data, total] = await query.skip(from).take(size).getManyAndCount();
     return { total, data };
   }
 }

@@ -15,7 +15,7 @@ import {
   MindfulnessEntity,
   MindfulnessRecordEntity,
   DiscountEntity,
-  SceneEntity, MindfulnessAlbumEntity
+  SceneEntity, MindfulnessAlbumEntity,
 } from './entities';
 import { ResourceModule } from "./modules/resource/resource.module";
 
@@ -26,7 +26,7 @@ import { ResourceModule } from "./modules/resource/resource.module";
     DownloadModule,
     // CatsModule,
     GraphQLModule.forRootAsync({
-      useClass: GraphQLConfigService
+      useClass: GraphQLConfigService,
     }),
     UserModule,
     ResourceModule,
@@ -41,14 +41,14 @@ import { ResourceModule } from "./modules/resource/resource.module";
       // entities: [AccountEntity, UserEntity, MindfulnessEntity,MindfulnessAlbumEntity, MindfulnessRecordEntity, DiscountEntity, SceneEntity],
       synchronize: true,
       keepConnectionAlive: true,
-    })
+    }),
   ],
   providers: [
     {
       provide: APP_INTERCEPTOR,
-      useClass: ErrorsInterceptor
+      useClass: ErrorsInterceptor,
     }],
-  exports: []
+  exports: [],
 })
 export class AppModule {
 }

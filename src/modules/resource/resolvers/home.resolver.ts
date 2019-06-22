@@ -28,7 +28,7 @@ export class HomeResolver {
     @Query('getHome')
     @Permission('anony')
     async getHome(req, body: { first: number, after?: number, before?: number, position?: number }) {
-        let data = await this.homeService.getHome(body.first, body.after, body.before, body.position);
+        const data = await this.homeService.getHome(body.first, body.after, body.before, body.position);
         return { code: 200, message: 'success', data };
     }
 

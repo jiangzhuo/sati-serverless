@@ -24,7 +24,7 @@ import {
   WanderAlbumEntity,
   MindfulnessAlbumRecordEntity,
   NatureAlbumRecordEntity,
-  WanderAlbumRecordEntity
+  WanderAlbumRecordEntity,
 } from "../../entities";
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MindfulnessService } from './services/mindfulness.service';

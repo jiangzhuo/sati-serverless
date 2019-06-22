@@ -8,7 +8,7 @@ import {
   NatureEntity,
   NatureAlbumEntity,
   WanderEntity,
-  WanderAlbumEntity
+  WanderAlbumEntity,
 } from '../../../entities';
 
 @Injectable()
@@ -28,7 +28,7 @@ export class SceneService {
   }
 
   async createScene(name) {
-    let newScene = this.sceneRepository.create({ name });
+    const newScene = this.sceneRepository.create({ name });
     await this.sceneRepository.insert(newScene);
     return newScene;
   }
@@ -50,7 +50,7 @@ export class SceneService {
 
   async getScene(first = 20, after?: string) {
     if (after) {
-      let scene = await this.sceneRepository.findOne(after);
+      const scene = await this.sceneRepository.findOne(after);
       return await this.sceneRepository.createQueryBuilder('scene')
         .where(`createTime >= :createTime`, { createTime: scene.createTime }).limit(first).getMany();
       // return await this.sceneRepository.find({ createTime: { $gte: after } }).limit(first).exec();

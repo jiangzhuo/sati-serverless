@@ -8,8 +8,6 @@ import * as uuid from 'uuid';
 import { S3 } from 'aws-sdk';
 
 const { REGION: region, BUCKET: bucket } = process.env;
-console.dir(bucket)
-console.log(region)
 const s3 = new S3();
 const inspect = require('util').inspect;
 
@@ -27,32 +25,31 @@ export class UploadController {
     const raw = await rawbody(request, { encoding: 'binary' });
     return new Promise(((resolve, reject) => {
 
-
       // todo 能改成return 一个Promise 在busboy finish的时候resolve
       // const raw = await rawbody(request, { encoding: 'utf8' });
       let finalEncoding, finalMimeType, finalFileStream, finalFile;
 
       const busboy = new Busboy({ headers: request.headers });
-      busboy.on('file', function (fieldname, file, filename, encoding, mimetype) {
+      busboy.on('file', function(fieldname, file, filename, encoding, mimetype) {
         finalEncoding = encoding;
         finalMimeType = mimetype;
         finalFileStream = file;
 
-        let buffers = [];
+        const buffers = [];
         console.log('File [' + fieldname + ']: filename: ' + filename);
-        file.on('data', function (data) {
-          buffers.push(data)
+        file.on('data', function(data) {
+          buffers.push(data);
           console.log('File [' + fieldname + '] got ' + data.length + ' bytes');
         });
-        file.on('end', function () {
+        file.on('end', function() {
           finalFile = Buffer.concat(buffers);
           console.log(`File [${fieldname}] Finished Encoding [${encoding}] MimeType ${mimetype}`);
         });
       });
-      busboy.on('field', function (fieldname, val, fieldnameTruncated, valTruncated) {
+      busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated) {
         console.log('Field [' + fieldname + ']: value: ' + inspect(val));
       });
-      busboy.on('finish', function () {
+      busboy.on('finish', function() {
         console.log('Done parsing form!');
 
         const fileName = `${hasha(finalFile, { algorithm: 'md5' })}.${getExtension(finalMimeType)}`;
@@ -61,14 +58,14 @@ export class UploadController {
           Bucket: bucket,
           Key: `upload/${fileName}`,
           Body: finalFile,
-        }, function (err, data) {
-          console.log(err, data)
+        }, function(err, data) {
+          console.log(err, data);
           if (err) {
             reject(err);
           } else {
             resolve({ code: 200, message: `${fileName} upload avatar success`, data: fileName });
           }
-        })
+        });
 
         // const writeStream = fs.createWriteStream(fileName);
         // writeStream.write(finalFile);
@@ -78,15 +75,14 @@ export class UploadController {
       busboy.write(raw, 'binary');
       busboy.end();
 
-
-    }))
+    }));
   }
 
   @Post('uploadAvatar')
   @UseInterceptors(FileInterceptor('file'))
   async uploadAvatar(@UploadedFile() file) {
     // let transformedBuffer = Buffer.from(file.buffer.toString('utf8'),'binary');
-    let transformedBuffer = file.buffer;
+    const transformedBuffer = file.buffer;
     const fileName = `${hasha(transformedBuffer, { algorithm: 'md5' })}.${getExtension(file.mimetype)}`;
 
     // const writeStream = fs.createWriteStream(fileName);
@@ -114,16 +110,16 @@ export class UploadController {
     // writeStream.write(file.buffer);
     // writeStream.end();
 
-    let result = await s3.createPresignedPost({
+    const result = await s3.createPresignedPost({
       Bucket: process.env.UPLOAD_BUCKET,
       Expires: 3600,
       Fields: {
-        key: fileName
+        key: fileName,
       },
       Conditions: [
         ['content-length-range', 0, 10000000], // 10 Mb
-        { 'acl': 'public-read' }
-      ]
+        { acl: 'public-read' },
+      ],
     });
 
     return { code: 200, message: 'upload avatar success', data: result };

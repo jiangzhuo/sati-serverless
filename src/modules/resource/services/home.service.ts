@@ -10,7 +10,7 @@ import {
   NatureEntity,
   WanderEntity,
   NatureAlbumEntity,
-  WanderAlbumEntity
+  WanderAlbumEntity,
 } from "../../../entities";
 
 @Injectable()
@@ -31,22 +31,22 @@ export class HomeService {
   }
 
   async getNew(first = 20, after?: number, before?: number, status = 1) {
-    let mindfulnessQuery = this.mindfulnessRepository.createQueryBuilder('mindfulness')
-    let mindfulnessAlbumQuery = this.mindfulnessAlbumRepository.createQueryBuilder('mindfulnessAlbum')
-    let natureQuery = this.natureRepository.createQueryBuilder('nature')
-    let natureAlbumQuery = this.natureAlbumRepository.createQueryBuilder('natureAlbum')
-    let wanderQuery = this.wanderRepository.createQueryBuilder('wander')
-    let wanderAlbumQuery = this.wanderAlbumRepository.createQueryBuilder('wanderAlbum')
+    const mindfulnessQuery = this.mindfulnessRepository.createQueryBuilder('mindfulness');
+    const mindfulnessAlbumQuery = this.mindfulnessAlbumRepository.createQueryBuilder('mindfulnessAlbum');
+    const natureQuery = this.natureRepository.createQueryBuilder('nature');
+    const natureAlbumQuery = this.natureAlbumRepository.createQueryBuilder('natureAlbum');
+    const wanderQuery = this.wanderRepository.createQueryBuilder('wander');
+    const wanderAlbumQuery = this.wanderAlbumRepository.createQueryBuilder('wanderAlbum');
 
     let allQuery = [mindfulnessQuery, mindfulnessAlbumQuery, natureQuery, natureAlbumQuery, wanderQuery, wanderAlbumQuery];
-    let allQueryWhere = allQuery.map(query => query.where.bind(query))
+    let allQueryWhere = allQuery.map(query => query.where.bind(query));
     if (after) {
-      allQuery = allQueryWhere.map(queryWhere => queryWhere('validTime >= :after', { after }))
-      allQueryWhere = allQuery.map(query => query.andWhere.bind(query))
+      allQuery = allQueryWhere.map(queryWhere => queryWhere('validTime >= :after', { after }));
+      allQueryWhere = allQuery.map(query => query.andWhere.bind(query));
     }
     if (before) {
-      allQuery = allQueryWhere.map(queryWhere => queryWhere('validTime <= :before', { before }))
-      allQueryWhere = allQuery.map(query => query.andWhere.bind(query))
+      allQuery = allQueryWhere.map(queryWhere => queryWhere('validTime <= :before', { before }));
+      allQueryWhere = allQuery.map(query => query.andWhere.bind(query));
     }
     if (status !== 0) {
       allQuery = allQueryWhere.map(queryWhere => queryWhere(`(status::bit(${status.toString(2).length}) & :status)::integer = 0`, { status: status.toString(2) }));
@@ -57,12 +57,12 @@ export class HomeService {
     } else {
       allQuery = allQuery.map(query => query.orderBy("user.validTime", "ASC"));
     }
-    let result = [];
+    const result = [];
 
-    let queryPromise  = [];
-    allQuery.forEach(query=>queryPromise.push(query.take(Math.abs(first)).getMany()));
+    const queryPromise  = [];
+    allQuery.forEach(query => queryPromise.push(query.take(Math.abs(first)).getMany()));
 
-    let [mindfulnessResult, mindfulnessAlbumResult, natureResult, natureAlbumResult, wanderResult, wanderAlbumResult] = await Promise.all(queryPromise) ;
+    const [mindfulnessResult, mindfulnessAlbumResult, natureResult, natureAlbumResult, wanderResult, wanderAlbumResult] = await Promise.all(queryPromise) ;
     // const mindfulnessResult = await this.mindfulnessRepository.find(query).sort(sortArg).limit(Math.abs(first)).exec();
     // const mindfulnessAlbumResult = await this.mindfulnessAlbumRepository.find(query).sort(sortArg).limit(Math.abs(first)).exec();
     // const natureResult = await this.natureRepository.find(query).sort(sortArg).limit(Math.abs(first)).exec();
@@ -81,8 +81,8 @@ export class HomeService {
         createTime: mindfulness.createTime,
         updateTime: mindfulness.updateTime,
         validTime: mindfulness.validTime,
-        status: mindfulness.status
-      })
+        status: mindfulness.status,
+      });
     });
     mindfulnessAlbumResult.forEach((mindfulnessAlbum) => {
       result.push({
@@ -96,8 +96,8 @@ export class HomeService {
         createTime: mindfulnessAlbum.createTime,
         updateTime: mindfulnessAlbum.updateTime,
         validTime: mindfulnessAlbum.validTime,
-        status: mindfulnessAlbum.status
-      })
+        status: mindfulnessAlbum.status,
+      });
     });
     natureResult.forEach((nature) => {
       result.push({
@@ -111,8 +111,8 @@ export class HomeService {
         createTime: nature.createTime,
         updateTime: nature.updateTime,
         validTime: nature.validTime,
-        status: nature.status
-      })
+        status: nature.status,
+      });
     });
     natureAlbumResult.forEach((natureAlbum) => {
       result.push({
@@ -126,8 +126,8 @@ export class HomeService {
         createTime: natureAlbum.createTime,
         updateTime: natureAlbum.updateTime,
         validTime: natureAlbum.validTime,
-        status: natureAlbum.status
-      })
+        status: natureAlbum.status,
+      });
     });
     wanderResult.forEach((wander) => {
       result.push({
@@ -141,8 +141,8 @@ export class HomeService {
         createTime: wander.createTime,
         updateTime: wander.updateTime,
         validTime: wander.validTime,
-        status: wander.status
-      })
+        status: wander.status,
+      });
     });
     wanderAlbumResult.forEach((wanderAlbum) => {
       result.push({
@@ -156,47 +156,47 @@ export class HomeService {
         createTime: wanderAlbum.createTime,
         updateTime: wanderAlbum.updateTime,
         validTime: wanderAlbum.validTime,
-        status: wanderAlbum.status
-      })
+        status: wanderAlbum.status,
+      });
     });
     if (first > 0) {
       result.sort((a, b) => {
         return a.validTime - b.validTime;
-      })
+      });
     } else {
       result.sort((a, b) => {
         return b.validTime - a.validTime;
-      })
+      });
     }
     return result.slice(0, Math.abs(first));
   }
 
   async getHome(first = 20, after?: number, before?: number, position?: number) {
     let query = this.homeRepository.createQueryBuilder('home');
-    let queryWhere = query.where.bind(query)
-    let validTimeQuery = {};
+    let queryWhere = query.where.bind(query);
+    const validTimeQuery = {};
     if (isNumber(after)) {
-      query = queryWhere(`validTime >= :after`, { after })
-      queryWhere = query.andWhere.bind(query)
+      query = queryWhere(`validTime >= :after`, { after });
+      queryWhere = query.andWhere.bind(query);
     }
     if (isNumber(before)) {
-      query = queryWhere(`validTime <= :before`, { before })
-      queryWhere = query.andWhere.bind(query)
+      query = queryWhere(`validTime <= :before`, { before });
+      queryWhere = query.andWhere.bind(query);
     }
     if (isNumber(position)) {
-      query = queryWhere(`position <= :position`, { position })
+      query = queryWhere(`position <= :position`, { position });
       // queryWhere = query.andWhere.bind(query)
     }
     if (first > 0) {
-      query.orderBy("home.validTime",'ASC');
+      query.orderBy("home.validTime", 'ASC');
     } else {
-      query.orderBy("home.validTime",'DESC');
+      query.orderBy("home.validTime", 'DESC');
     }
     return await query.take(Math.abs(first)).getMany();
   }
 
   async getHomeByFromAndSize(from?: number, size?: number, position?: number) {
-    let query = this.homeRepository.createQueryBuilder('home');
+    const query = this.homeRepository.createQueryBuilder('home');
     if (isNumber(position)) {
       query.where('position = :position', { position });
     }
@@ -204,7 +204,7 @@ export class HomeService {
   }
 
   async countHome(position?: number) {
-    let query = this.homeRepository.createQueryBuilder('home');
+    const query = this.homeRepository.createQueryBuilder('home');
     if (isNumber(position)) {
       query.where('position = :position', { position });
     }
@@ -212,17 +212,17 @@ export class HomeService {
   }
 
   async getHomeById(id) {
-    return await this.homeRepository.findOne(id)
+    return await this.homeRepository.findOne(id);
   }
 
   async createHome(data) {
     // data.createTime = moment().unix();
     // data.updateTime = moment().unix();
-    return await this.homeRepository.create(data)
+    return await this.homeRepository.create(data);
   }
 
   async updateHome(id, data) {
-    let updateObject = { updateTime: moment().unix() };
+    const updateObject = { updateTime: moment().unix() };
     if (!isEmpty(data.position)) {
       updateObject['position'] = data.position;
     }

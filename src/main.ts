@@ -1,5 +1,5 @@
 import './typeorm-monkeypatch';
-import './hackLogger'
+import './hackLogger';
 import { Handler, Context } from 'aws-lambda';
 import { Server } from 'http';
 import { createServer, proxy } from 'aws-serverless-express';
@@ -30,8 +30,7 @@ async function bootstrapServer(): Promise<Server> {
       nestApp.use(eventContext());
       await nestApp.init();
       cachedServer = createServer(nestApp.getHttpAdapter().getInstance(), undefined, binaryMimeTypes);
-    }
-    catch (error) {
+    } catch (error) {
       return Promise.reject(error);
     }
   }
@@ -43,4 +42,4 @@ export const handler: Handler = async (event: any, context: Context) => {
 
   return proxy(cachedServer, event, context, 'PROMISE').promise;
 
-}
+};

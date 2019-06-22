@@ -1,24 +1,23 @@
 import {
   Column, CreateDateColumn, Entity, ManyToMany, PrimaryGeneratedColumn, UpdateDateColumn, OneToMany, JoinTable,
-  ManyToOne, JoinColumn
+  ManyToOne, JoinColumn,
 } from 'typeorm';
-import { SceneEntity } from "./scene.entity";
-import { UserEntity } from "./user.entity";
+import { SceneEntity } from './scene.entity';
+import { UserEntity } from './user.entity';
 import { MindfulnessAlbumEntity } from './mindfulnessAlbum.entity';
-import { NatureEntity } from "./nature.entity";
-
+import { NatureEntity } from './nature.entity';
 
 @Entity('mindfulness')
 export class MindfulnessEntity {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
-  @Column({ type: "text", array: true })
+  @Column({ type: 'text', array: true })
   background: string[];
-  @Column({ type: "text", default: "" })
+  @Column({ type: 'text', default: '' })
   name: string;
-  @Column({ type: "text", default: "" })
+  @Column({ type: 'text', default: '' })
   description: string;
-  @ManyToMany(type => SceneEntity)
+  @ManyToMany(type => SceneEntity, { eager: true })
   @JoinTable()
   scenes: SceneEntity[];
   @Column('float', { default: 0 })
@@ -26,34 +25,35 @@ export class MindfulnessEntity {
   @CreateDateColumn({
     transformer: {
       to: (value?: number) => (!value ? value : new Date(value * 1000)),
-      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000))
-    }
+      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000)),
+    },
   })
   createTime: number;
   @UpdateDateColumn({
     transformer: {
       to: (value?: number) => (!value ? value : new Date(value * 1000)),
-      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000))
-    }
+      from: (value?: Date) => (!value ? value : Math.round(value.getTime() / 1000)),
+    },
   })
   updateTime: number;
-  @ManyToOne(type => UserEntity)
+  @ManyToOne(type => UserEntity, { eager: true })
   @JoinColumn({ name: 'author' })
   author: UserEntity;
-  @Column({ type: "text", default: "" })
+  @Column({ type: 'text', default: '' })
   audio: string;
-  @Column({ type: "text", default: "" })
+  @Column({ type: 'text', default: '' })
   copy: string;
-  @ManyToMany(type => MindfulnessAlbumEntity)
+  @ManyToMany(type => MindfulnessAlbumEntity, { eager: true })
   @JoinTable()
   mindfulnessAlbums: MindfulnessAlbumEntity[];
-  @Column({ type: "int", default: 0 })
+  @Column({ type: 'int', default: 0 })
   status: number;
-  @Column({ type: "int", default: 0 })
+  @Column({ type: 'int', default: 0 })
   validTime: number;
-  @ManyToOne(type => NatureEntity)
-  @JoinColumn({ name: "natureId" })
+  @ManyToOne(type => NatureEntity, { eager: true })
+  @JoinColumn({ name: 'natureId' })
   natureId: NatureEntity;
-  @Column({ type: "text", array: true, default: '{}' })
+  @Column({ type: 'text', array: true, default: '{}' })
+    // tslint:disable-next-line:variable-name
   __tag: string[];
 }

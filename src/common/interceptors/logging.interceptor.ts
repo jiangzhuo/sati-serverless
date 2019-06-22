@@ -15,8 +15,6 @@ export class LoggingInterceptor implements NestInterceptor {
     this.logger.log(`${graphqlCtx.user && graphqlCtx.user.id}\t${graphqlCtx.udid}\t${graphqlCtx.clientIp}\t${graphqlCtx.operationName}`);
     return next.handle().pipe(tap(() => {
       // tslint:disable-next-line:max-line-length
-
-      const graphqlCtx = context.getArgByIndex(2);
       this.logger.log(`${graphqlCtx.user && graphqlCtx.user.id}\t${graphqlCtx.udid}\t${graphqlCtx.clientIp}\t${graphqlCtx.operationName}\t${Date.now() - now}`);
     }));
   }

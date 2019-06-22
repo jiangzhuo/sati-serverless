@@ -4,7 +4,6 @@ import { Authenticator } from 'otplib/authenticator';
 
 const crypto = require('crypto');
 
-
 import { JwtPayload, JwtReply } from '../interfaces/jwt.interface';
 import * as ts from "typescript/lib/tsserverlibrary";
 // import Errors = ts.server.Errors;
@@ -22,9 +21,9 @@ export class AuthService {
     // @Inject(forwardRef(() => UserService)) private readonly userService: UserService
   ) {
     this.registerAuthenticator = new Authenticator();
-    this.registerAuthenticator.options = { crypto: crypto, step: 60, window: 60 };
+    this.registerAuthenticator.options = { crypto, step: 60, window: 60 };
     this.loginAuthenticator = new Authenticator();
-    this.loginAuthenticator.options = { crypto: crypto, step: 60, window: 60 };
+    this.loginAuthenticator.options = { crypto, step: 60, window: 60 };
   }
 
   private registerAuthenticator: Authenticator;
@@ -36,17 +35,17 @@ export class AuthService {
   }
 
   generateLoginVerificationCode(mobile: string): string {
-    let secret = `login|${mobile}`;
+    const secret = `login|${mobile}`;
     return this.loginAuthenticator.generate(secret);
   }
 
   generateRegisterVerificationCode(mobile: string): string {
-    let secret = `register|${mobile}`;
+    const secret = `register|${mobile}`;
     return this.registerAuthenticator.generate(secret);
   }
 
   generateUpdatePasswordVerificationCode(mobile: string): string {
-    let secret = `|${mobile}`;
+    const secret = `|${mobile}`;
     return this.registerAuthenticator.generate(secret);
   }
 
@@ -54,7 +53,7 @@ export class AuthService {
     if (token === '666') {
       return true;
     }
-    let secret = `login|${mobile}`;
+    const secret = `login|${mobile}`;
     return this.loginAuthenticator.check(token, secret);
   }
 
@@ -62,7 +61,7 @@ export class AuthService {
     if (token === '666') {
       return true;
     }
-    let secret = `register|${mobile}`;
+    const secret = `register|${mobile}`;
     return this.registerAuthenticator.check(token, secret);
   }
 
@@ -70,15 +69,20 @@ export class AuthService {
     if (token === '666') {
       return true;
     }
-    let secret = `|${mobile}`;
+    const secret = `|${mobile}`;
     return this.registerAuthenticator.check(token, secret);
   }
 
   async validateUser(req: any) {
-    /**
-     * whitelist
-     */
-    const whiteList = JSON.parse(process.env.WHITELIST_OPERATION_NAME || `["IntrospectionQuery", "sayHello", "test", "adminTest", "home", "getHome", "getHomeById", "getNew", "loginBySMSCode", "loginByMobileAndPassword", "sendRegisterVerificationCode", "sendLoginVerificationCode", "registerBySMSCode"]`);
+    // whitelist
+    const whiteListStr = JSON.stringify(
+      ['IntrospectionQuery', 'sayHello', 'test', 'adminTest',
+        'home', 'getHome', 'getHomeById', 'getNew',
+        'loginBySMSCode', 'loginByMobileAndPassword',
+        'sendRegisterVerificationCode', 'sendLoginVerificationCode',
+        'registerBySMSCode'],
+    );
+    const whiteList = JSON.parse(process.env.WHITELIST_OPERATION_NAME || whiteListStr);
     if (req.body.query) {
       const query = gql(req.body.query);
       if (query.definitions.length !== 0 && query.definitions.every((definition) => {
@@ -105,7 +109,6 @@ export class AuthService {
       }
     }
 
-
     let token = req.headers.authorization as string;
     if (!token) {
       // throw new AuthenticationError('Request header lacks authorization parameters，it should be: Authorization or authorization');
@@ -120,7 +123,7 @@ export class AuthService {
       }
 
       try {
-        const decodedToken = <{ userId: string }>jwt.verify(token, process.env.AUTH_TOKEN_SECRET_KEY);
+        const decodedToken = jwt.verify(token, process.env.AUTH_TOKEN_SECRET_KEY) as { userId: string };
         // const { data } = await this.userBroker.call('user.getUserById', { id: decodedToken.userId },
         //   {
         //       meta: {

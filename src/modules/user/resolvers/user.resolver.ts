@@ -21,7 +21,7 @@ export class UserResolver {
 
   constructor(
     @Inject(UserService) private readonly userService: UserService,
-    @Inject(AuthService) private readonly authService: AuthService
+    @Inject(AuthService) private readonly authService: AuthService,
     // @InjectBroker() private readonly userBroker: ServiceBroker,
     // @Inject(NotaddGrpcClientFactory) private readonly notaddGrpcClientFactory: NotaddGrpcClientFactory,
   ) {
@@ -47,7 +47,7 @@ export class UserResolver {
     }
     const user = await this.userService.loginByMobile(body.mobile);
     // if (!user) throw new RpcException({ code: 406, message: t('Login by mobile failed no user') });
-    if (!user) throw new HttpException('Login by mobile failed no user', 406);
+    if (!user) { throw new HttpException('Login by mobile failed no user', 406); }
     const tokenInfo = this.authService.createToken({ userId: user.id });
 
     // tslint:disable-next-line:max-line-length
@@ -62,7 +62,7 @@ export class UserResolver {
     // tslint:disable-next-line:max-line-length
     this.logger.log(`${body && body.mobile}\t${context.udid}\t${context.clientIp}\t${context.operationName}\t${resolveInfo.fieldName}\t${JSON.stringify({
       tokenInfo,
-      userData
+      userData,
     })}`);
     return { code: 200, message: 'success', data: tokenInfo };
   }
@@ -76,7 +76,7 @@ export class UserResolver {
     // tslint:disable-next-line:max-line-length
     this.logger.log(`${context.user && context.user.id}\t${context.udid}\t${context.clientIp}\t${context.operationName}\t${resolveInfo.fieldName}\t${JSON.stringify({
       tokenInfo,
-      userData
+      userData,
     })}`);
     return { code: 200, message: 'success', data: tokenInfo };
   }
@@ -87,7 +87,7 @@ export class UserResolver {
     if (!checkResult) {
       throw new HttpException('Registration by mobile failed', 403);
     }
-    let user = await this.userService.registerBySMSCode(registerUserInput);
+    const user = await this.userService.registerBySMSCode(registerUserInput);
 
     // tslint:disable-next-line:max-line-length
     this.logger.log(`${registerUserInput && registerUserInput.mobile}\t${context.udid}\t${context.clientIp}\t${context.operationName}\t${resolveInfo.fieldName}\t${JSON.stringify(user)}`);
@@ -105,8 +105,7 @@ export class UserResolver {
     //         },
     //     });
 
-
-    let verificationCode = this.authService.generateLoginVerificationCode(body.mobile);
+    const verificationCode = this.authService.generateLoginVerificationCode(body.mobile);
     if (body.mobile.startsWith('13800138000')) {
       // return { data: verificationCode };
     } else {
@@ -132,8 +131,7 @@ export class UserResolver {
   @Query('sendRegisterVerificationCode')
   async sendRegisterVerificationCode(req, body, context, resolveInfo): Promise<CommonResult> {
 
-
-    let verificationCode = this.authService.generateRegisterVerificationCode(body.mobile);
+    const verificationCode = this.authService.generateRegisterVerificationCode(body.mobile);
     if (body.mobile.startsWith('13800138000')) {
       // return { data: verificationCode };
     } else {
@@ -151,7 +149,6 @@ export class UserResolver {
       // return { data: verificationCode };
     }
 
-
     // tslint:disable-next-line:max-line-length
     this.logger.log(`${body && body.mobile}\t${context.udid}\t${context.clientIp}\t${context.operationName}\t${resolveInfo.fieldName}\t${JSON.stringify(verificationCode)}`);
     return { code: 200, message: 'success' };
@@ -162,7 +159,7 @@ export class UserResolver {
   async updateCurrentUser(req, body, context, resolveInfo): Promise<CommonResult> {
     body.updateCurrentUserInput.id = context.user.id;
 
-    let user = await this.userService.updateUser(context.user.id, body.updateCurrentUserInput);
+    const user = await this.userService.updateUser(context.user.id, body.updateCurrentUserInput);
 
     // const { data } = await this.userBroker.call('user.updateUserById', body.updateCurrentUserInput);
     // tslint:disable-next-line:max-line-length
@@ -174,7 +171,7 @@ export class UserResolver {
   @Permission('editor')
   async updateUserById(req, body, context, resolveInfo): Promise<CommonResult> {
 
-    let user = await this.userService.updateUser(body.updateUserInput.id, body.updateUserInput);
+    const user = await this.userService.updateUser(body.updateUserInput.id, body.updateUserInput);
     // const { data } = await this.userBroker.call('user.updateUserById', body.updateUserInput);
     // tslint:disable-next-line:max-line-length
     this.logger.log(`${context.user && context.user.id}\t${context.udid}\t${context.clientIp}\t${context.operationName}\t${resolveInfo.fieldName}\t${JSON.stringify(user)}`);
@@ -246,7 +243,7 @@ export class UserResolver {
   async changeBalanceByAdmin(req, body: { userId: string, changeValue: number, extraInfo: string }, context, resolveInfo) {
     const user = await this.userService.changeBalance(body.userId, body.changeValue, 'changeByAdmin', JSON.stringify({
       operatorId: context.user.id,
-      operatorExtraInfo: body.extraInfo
+      operatorExtraInfo: body.extraInfo,
     }));
     // tslint:disable-next-line:max-line-length
     this.logger.log(`${context.user && context.user.id}\t${context.udid}\t${context.clientIp}\t${context.operationName}\t${resolveInfo.fieldName}\t${JSON.stringify(user)}`);

@@ -6,7 +6,7 @@ import {
     HttpStatus,
     Injectable,
     Logger,
-    NestInterceptor
+    NestInterceptor,
 } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -17,8 +17,8 @@ export class ErrorsInterceptor implements NestInterceptor {
 
     intercept(context: ExecutionContext, next: CallHandler<any>): Observable<any> {
         return next.handle().pipe(catchError((error) => {
-            console.log(error)
-            let code,message;
+            console.log(error);
+            let code, message;
             if (error instanceof HttpException) {
                 code = error.getStatus();
                 message = error.getResponse();
@@ -30,7 +30,7 @@ export class ErrorsInterceptor implements NestInterceptor {
                 this.logger.error(`${code}\t${message}`);
                 // return throwError(new HttpException(message, code))
             } else {
-                console.log(error)
+                console.log(error);
                 // Sentry.captureException(error);
                 code = 500;
                 message = error.message || 'unknow error';

@@ -11,7 +11,6 @@ import {
 import { CatsService } from './cats.service';
 import { Cat } from './interfaces/cat.interface';
 
-
 @Resolver('Cat')
 export class CatsResolvers {
     constructor(private readonly catsService: CatsService) {}
