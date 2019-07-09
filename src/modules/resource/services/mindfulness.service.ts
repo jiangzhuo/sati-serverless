@@ -2,22 +2,21 @@ import * as nodejieba from 'nodejieba';
 import { HttpException, Injectable } from '@nestjs/common';
 
 import * as moment from 'moment';
-import { isEmpty, isNumber, isArray, isBoolean, isString } from 'lodash';
-import { AccountEntity, MindfulnessEntity, MindfulnessRecordEntity, ReceiptEntity, UserEntity } from '../../../entities';
-import { InjectRepository, InjectConnection } from '@nestjs/typeorm';
-import { Connection, MoreThanOrEqual, Repository } from 'typeorm';
+import { isArray, isBoolean, isEmpty, isNumber, isString } from 'lodash';
+import { AccountEntity, MindfulnessAlbumEntity, MindfulnessEntity, MindfulnessRecordEntity, SceneEntity, UserEntity } from '../../../entities';
+import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
+import { Connection, DeepPartial, MoreThanOrEqual, Repository } from 'typeorm';
 import { EntityNotFoundError } from 'typeorm/error/EntityNotFoundError';
 
 @Injectable()
 export class MindfulnessService {
-  onModuleInit() {
-  }
-
   constructor(
     @InjectConnection() private readonly connection: Connection,
     @InjectRepository(UserEntity) private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(SceneEntity) private readonly sceneRepository: Repository<SceneEntity>,
     @InjectRepository(AccountEntity) private readonly accountRepository: Repository<AccountEntity>,
     @InjectRepository(MindfulnessEntity) private readonly mindfulnessRepository: Repository<MindfulnessEntity>,
+    @InjectRepository(MindfulnessAlbumEntity) private readonly mindfulnessAlbumRepository: Repository<MindfulnessAlbumEntity>,
     @InjectRepository(MindfulnessRecordEntity) private readonly mindfulnessRecordRepository: Repository<MindfulnessRecordEntity>,
   ) {
   }
@@ -72,7 +71,7 @@ export class MindfulnessService {
     return await this.mindfulnessRepository.findByIds(ids);
   }
 
-  async getMindfulnessRecord(userId: string, mindfulnessId: string|string[]);
+  async getMindfulnessRecord(userId: string, mindfulnessId: string | string[]);
   async getMindfulnessRecord(userId, mindfulnessId) {
     if (isArray(mindfulnessId)) {
       return await this.mindfulnessRecordRepository.createQueryBuilder('mindfulnessRecord')
@@ -131,9 +130,15 @@ export class MindfulnessService {
   async createMindfulness(data) {
     // data.createTime = moment().unix();
     // data.updateTime = moment().unix();
-    const newMindfulness = this.mindfulnessRepository.create(data);
-    const result = await this.mindfulnessRepository.insert(newMindfulness);
-    await this.updateTag(result.identifiers[0].id);
+    data.authorEntity = await this.userRepository.findOne(data.author);
+    const scenes = await this.sceneRepository.findByIds(data.scenes);
+    data.sceneEntities = scenes;
+    // const mindfulnessAlbums = await this.mindfulnessAlbumRepository.findByIds(data.mindfulnessAlbums);
+    // data.mindfulnessAlbumEntities = mindfulnessAlbums;
+    data.mindfulnessAlbumEntities = [];
+    const newMindfulness: MindfulnessEntity = this.mindfulnessRepository.create(data as DeepPartial<MindfulnessEntity>);
+    const result = await this.mindfulnessRepository.save(newMindfulness);
+    await this.updateTag(result.id);
     return result;
   }
 
@@ -364,10 +369,10 @@ export class MindfulnessService {
     const cutKeyword = nodejieba.cut(keyword);
     let query = this.mindfulnessRepository.createQueryBuilder('mindfulness');
 
-    query.select().innerJoin('mindfulness.author', 'author')
-      .innerJoin('mindfulness.scenes', 'scenes')
-      .innerJoin('mindfulness.mindfulnessAlbums', 'mindfulnessAlbums')
-      .innerJoin('mindfulness.natureId', 'natureId');
+    // query.select().innerJoin('mindfulness.author', 'author')
+    //   .innerJoin('mindfulness.scenes', 'scenes')
+    //   .innerJoin('mindfulness.mindfulnessAlbums', 'mindfulnessAlbums')
+    //   .innerJoin('mindfulness.natureId', 'natureId');
     // query.leftJoinAndSelect("mindfulness.author","author")
     //   .leftJoinAndSelect("mindfulness.scenes","scenes")
     // .leftJoinAndSelect("mindfulness.mindfulnessAlbums","mindfulnessAlbums")
@@ -382,10 +387,7 @@ export class MindfulnessService {
     // // ARRAY[:...queryCategories]::varchar[]
     // let total = await this.mindfulnessRepository.findAndCount(query);
     // let data = await this.mindfulnessRepository.find(query).skip(from).limit(size).exec();
-    console.log(query.skip(from).take(size).getSql());
     const [data, total] = await query.skip(from).take(size).getManyAndCount();
-    console.log(data[0]);
-    console.log(await this.mindfulnessRepository.find());
     return { total, data };
   }
 

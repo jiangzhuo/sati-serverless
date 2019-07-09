@@ -1,6 +1,6 @@
 import {
   Column, CreateDateColumn, Entity, ManyToMany, PrimaryGeneratedColumn, UpdateDateColumn, OneToMany, JoinTable,
-  ManyToOne, JoinColumn,
+  ManyToOne, JoinColumn, RelationId, AfterLoad,
 } from 'typeorm';
 import { SceneEntity } from './scene.entity';
 import { UserEntity } from './user.entity';
@@ -17,9 +17,20 @@ export class MindfulnessEntity {
   name: string;
   @Column({ type: 'text', default: '' })
   description: string;
-  @ManyToMany(type => SceneEntity, { eager: true })
-  @JoinTable()
-  scenes: SceneEntity[];
+  @ManyToMany(type => SceneEntity, scene => scene.mindfulness)
+  @JoinTable({
+    joinColumn: {
+      name: 'mindfulnessId',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'sceneId',
+      referencedColumnName: 'id',
+    },
+  })
+  sceneEntities: SceneEntity[];
+  @RelationId((mindfulness: MindfulnessEntity) => mindfulness.sceneEntities)
+  scenes: string[];
   @Column('float', { default: 0 })
   price: number;
   @CreateDateColumn({
@@ -36,23 +47,35 @@ export class MindfulnessEntity {
     },
   })
   updateTime: number;
-  @ManyToOne(type => UserEntity, { eager: true })
-  @JoinColumn({ name: 'author' })
-  author: UserEntity;
+  @ManyToOne(type => UserEntity, { nullable: false })
+  @JoinColumn()
+  authorEntity: UserEntity;
+  @RelationId((mindfulness: MindfulnessEntity) => mindfulness.authorEntity, 'author')
+  author: string;
   @Column({ type: 'text', default: '' })
   audio: string;
   @Column({ type: 'text', default: '' })
   copy: string;
-  @ManyToMany(type => MindfulnessAlbumEntity, { eager: true })
+  @ManyToMany(type => MindfulnessAlbumEntity)
   @JoinTable()
-  mindfulnessAlbums: MindfulnessAlbumEntity[];
+  mindfulnessAlbumEntities: MindfulnessAlbumEntity[];
+  @RelationId((mindfulness: MindfulnessEntity) => mindfulness.mindfulnessAlbumEntities)
+  mindfulnessAlbums: string[];
   @Column({ type: 'int', default: 0 })
   status: number;
   @Column({ type: 'int', default: 0 })
   validTime: number;
-  @ManyToOne(type => NatureEntity, { eager: true })
+  @ManyToOne(type => NatureEntity, { nullable: true })
   @JoinColumn({ name: 'natureId' })
-  natureId: NatureEntity;
+  natureEntity: NatureEntity;
+  @RelationId((mindfulness: MindfulnessEntity) => mindfulness.natureEntity)
+  natureId: string;
+  @AfterLoad()
+  async defaultEmptyNatureId() {
+    if (!!!this.natureId) {
+      this.natureId = '00000000-0000-0000-0000-000000000000';
+    }
+  }
   @Column({ type: 'text', array: true, default: '{}' })
     // tslint:disable-next-line:variable-name
   __tag: string[];

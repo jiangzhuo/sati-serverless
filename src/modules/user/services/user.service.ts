@@ -9,10 +9,10 @@ import { InjectRepository, InjectConnection } from '@nestjs/typeorm';
 import { UserEntity } from '../../../entities/user.entity';
 
 import { Repository, Connection, In, MoreThanOrEqual } from 'typeorm';
-import { AccountEntity } from "../../../entities/account.entity";
-import { GraphQLError } from "graphql";
-import * as uuidValidate from "uuid-validate";
-import { EntityNotFoundError } from "typeorm/error/EntityNotFoundError";
+import { AccountEntity } from '../../../entities/account.entity';
+import { GraphQLError } from 'graphql';
+import * as uuidValidate from 'uuid-validate';
+import { EntityNotFoundError } from 'typeorm/error/EntityNotFoundError';
 import { ReceiptEntity } from '../../../entities/receipt.entity';
 
 // import { __ as t } from 'i18n';
@@ -28,9 +28,12 @@ export class UserService {
   ) { }
 
   async updateUser(id: string, updateUserInput: any): Promise<UserEntity> {
+    console.trace(id)
     let user = await this.userRepository.findOne(id);
     // if (!user) throw new RpcException({ code: 404, message: t('User does not exist') });
-    if (!user) { throw new HttpException('User does not exist', 404); }
+    if (!user) {
+      throw new HttpException('User does not exist', 404);
+    }
     if (updateUserInput.nickname) {
       await this.userRepository.update(id, { nickname: updateUserInput.nickname });
     }
@@ -55,7 +58,10 @@ export class UserService {
 
   async loginByMobileAndPassword(mobile: string, password: string) {
     const user = await this.userRepository.findOne({ mobile });
-    if (!user) { throw new HttpException('User does not exist', 404); }
+    if (!user) {
+      throw new HttpException('User does not exist', 404);
+    }
+    console.log(mobile, password, user.password);
     if (!await this.cryptoUtil.checkPassword(password, user.password)) {
       // throw new RpcException({ code: 406, message: t('invalid password') });
       throw new HttpException('invalid password', 406);
@@ -67,7 +73,7 @@ export class UserService {
     createUserInput.status = 1;
     // await this.checkUsernameExist(createUserInput.username);
     // createUserInput.username = createUserInput.username || createUserInput.mobile;
-    createUserInput.password = await this.cryptoUtil.encryptPassword(createUserInput.password);
+    // createUserInput.password = await this.cryptoUtil.encryptPassword(createUserInput.password);
     const entity = await this.userRepository.create({
       mobile: createUserInput.mobile,
       username: createUserInput.mobile,
@@ -75,7 +81,7 @@ export class UserService {
       nickname: createUserInput.nickname,
       avatar: createUserInput.avatar,
       status: createUserInput.status,
-      balance: 100,
+      balance: 0,
       role: 0,
     });
     return await this.userRepository.save(entity);
@@ -96,7 +102,27 @@ export class UserService {
   async getUser(first = 20, after?: string): Promise<UserEntity[]> {
     if (after) {
       // todo after
-      return await this.userRepository.find({ take: first });
+      // return await this.userModel.find({ _id: { $gte: after } }).limit(first).exec();
+
+      // let afterWhichEntity = await this.userRepository.createQueryBuilder('user')
+      //   .select("user.createTime")
+      //   .where(`id = :after`, { after });
+      // console.log(afterWhichEntity.getSql());
+      // return await this.userRepository.createQueryBuilder('user')
+      //   .where(`user.creatTime >= :createTime`, { createTime: afterWhichEntity.getSql() }).take(first).getMany();
+
+      return await this.userRepository.createQueryBuilder('user')
+        .where(qb => {
+          const subQuery = qb.subQuery()
+            .select('user.createTime')
+            .from(UserEntity, 'user')
+            .where('user.id = :after')
+            .getQuery();
+          return 'user.createTime >= ' + subQuery;
+        })
+        .take(first)
+        .setParameter('after', after)
+        .getMany();
     } else {
       return await this.userRepository.find({ take: first });
     }
@@ -114,7 +140,6 @@ export class UserService {
       query = queryWhere.call(query, 'account.type = :type', { type });
       // conditions['type'] = type
     }
-    console.log(query.getSql());
     query = query.skip((page - 1) * limit).limit(limit);
     return await query.getMany();
   }
@@ -132,7 +157,6 @@ export class UserService {
       // conditions['type'] = type
       query = queryWhere.call(query, 'account.type = :type', { type });
     }
-    console.log(query.getQueryAndParameters());
     // let userAccountTotal = await this.accountModel.countDocuments(conditions).exec();
     // return userAccountTotal
     return await query.getCount();
@@ -175,7 +199,6 @@ export class UserService {
       }
 
       await runner.commitTransaction();
-      console.log(user);
       return user;
     } catch (err) {
       console.log('err', err);

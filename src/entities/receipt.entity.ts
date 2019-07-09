@@ -7,18 +7,20 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   ManyToOne,
+  RelationId,
 } from 'typeorm';
 import { UserEntity } from './user.entity';
 
 @Entity('receipt')
 export class ReceiptEntity {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: number;
-  @Column({ length: 20 })
+  @Column({ length: 30 })
   type: string;
   @ManyToOne(type => UserEntity)
-  @JoinColumn({ name: 'userId' })
-  userId: UserEntity;
+  userEntity: UserEntity;
+  @RelationId((receipt: ReceiptEntity) => receipt.userEntity, 'userId')
+  userId: string[];
   @Column('text')
   receipt: string;
   @Column()

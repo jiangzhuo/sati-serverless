@@ -1,11 +1,11 @@
 import {
   Column, CreateDateColumn, Entity, ManyToMany, PrimaryGeneratedColumn, UpdateDateColumn, OneToMany, JoinTable,
-  ManyToOne, JoinColumn,
+  ManyToOne, JoinColumn, RelationId,
 } from 'typeorm';
 import { SceneEntity } from "./scene.entity";
 import { UserEntity } from "./user.entity";
 
-@Entity('natureAlbum')
+@Entity('nature_album')
 export class NatureAlbumEntity {
   @PrimaryGeneratedColumn("uuid")
   id: string;
@@ -15,9 +15,15 @@ export class NatureAlbumEntity {
   name: string;
   @Column({ type: "text", default: "" })
   description: string;
-  @ManyToMany(type => SceneEntity)
+  // @ManyToMany(type => SceneEntity, scene => scene.natureAlbum, )
+  // @JoinTable()
+  // scenes: SceneEntity[];
+
+  @ManyToMany(type => SceneEntity, scene => scene.natureAlbum)
   @JoinTable()
-  scenes: SceneEntity[];
+  sceneEntities: SceneEntity[];
+  // @RelationId((natureAlbum: NatureAlbumEntity) => natureAlbum.sceneEntities)
+  // scenes: string[];
   @Column('float', { default: 0 })
   price: number;
   @CreateDateColumn({

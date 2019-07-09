@@ -49,9 +49,7 @@ export class SceneResolver {
     @Mutation('createScene')
     @Permission('editor')
     async createScene(req, body: { name: string }, context, resolveInfo) {
-      console.log('aaaaaaa');
       const data = await this.sceneService.createScene(body.name);
-      console.log('bbbbbb');
         // tslint:disable-next-line:max-line-length
       this.logger.log(`${context.user && context.user.id}\t${context.udid}\t${context.clientIp}\t${context.operationName}\t${resolveInfo.fieldName}\t${JSON.stringify(data)}`);
       return { code: 200, message: 'success', data };

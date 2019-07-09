@@ -70,8 +70,8 @@ export class UserResolver {
   @Query('renewToken')
   @Permission('user')
   async renewToken(req, body, context, resolveInfo) {
-    const userData = await this.userService.getUserById(body.userId);
-    const tokenInfo = this.authService.createToken({ userId: body.userId });
+    const userData = await this.userService.getUserById(context.user.id);
+    const tokenInfo = this.authService.createToken({ userId: context.user.id });
 
     // tslint:disable-next-line:max-line-length
     this.logger.log(`${context.user && context.user.id}\t${context.udid}\t${context.clientIp}\t${context.operationName}\t${resolveInfo.fieldName}\t${JSON.stringify({

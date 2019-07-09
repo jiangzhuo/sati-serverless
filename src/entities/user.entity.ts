@@ -10,7 +10,7 @@ export class UserEntity {
   username: string;
   @Column({ length: 120 })
   password: string;
-  @Column({ length: 20 })
+  @Column({ length: 60 })
   nickname: string;
   @Column({ length: 100 })
   avatar: string;

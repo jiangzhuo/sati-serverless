@@ -29,7 +29,7 @@ export class SceneService {
 
   async createScene(name) {
     const newScene = this.sceneRepository.create({ name });
-    await this.sceneRepository.insert(newScene);
+    await this.sceneRepository.save(newScene);
     return newScene;
   }
 

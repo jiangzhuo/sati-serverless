@@ -37,10 +37,12 @@ import { ResourceModule } from "./modules/resource/resource.module";
       username: 'postgres',
       password: 'wangzhe88',
       database: 'sati_test_home',
-      entities: [__dirname + '/entities/*.entity{.ts,.js}', __dirname + '/entities/*.view{.ts,.js}'],
+      entities: [__dirname + '/entities/*.entity{.ts,.js}'],
       // entities: [AccountEntity, UserEntity, MindfulnessEntity,MindfulnessAlbumEntity, MindfulnessRecordEntity, DiscountEntity, SceneEntity],
       synchronize: true,
       keepConnectionAlive: true,
+      // logging: "all",
+      // logger: 'advanced-console',
     }),
   ],
   providers: [

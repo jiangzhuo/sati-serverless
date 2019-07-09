@@ -1,0 +1,103 @@
+type Query {
+    sayPurchaseHello(name: String): HelloPurchaseResponse
+    "苹果验证"
+    appleValidate(userId: String, receipt: String): AppleValidateResponse
+    "搜索收据"
+    searchReceipt(type: String, page: Int, limit: Int, keyword: String): SearchReceiptResponse
+    "搜索内购设置"
+    searchPurchase(type: String, page: Int, limit: Int): SearchPurchaseResponse
+}
+
+type Mutation {
+    "创建内购设置"
+    createPurchase(data: createPurchaseRequest!): getPurchaseResponse
+    "删除内购设置"
+    deletePurchase(id: String!): getPurchaseResponse
+}
+
+type getPurchaseResponse {
+    code: Int
+    message: String
+    data: Purchase
+}
+
+input createPurchaseRequest {
+    "类型 appleConsumable/appleNonConsumable/appleAutoRenewableSubscription/appleNonRenewingSubscription"
+    type: String
+    "app store设置里填的产品id"
+    productId: String
+    "应用的bundleId"
+    bundleId: String
+    "价值多少，购买认证后加多少price到用户的balance"
+    price: Int
+    "创建时间"
+    createTime: Int
+    "更新时间"
+    updateTime: Int
+}
+
+type HelloPurchaseResponse {
+    code: Int
+    message: String
+    data: String
+}
+
+type AppleValidateResponse {
+    code: Int
+    message: String
+    data: AppleValidateResponseData
+}
+
+type SearchReceiptResponse {
+    code: Int
+    message: String
+    data:SearchReceiptResponseData
+}
+
+type SearchPurchaseResponse {
+    code: Int
+    message: String
+    data:SearchPurchaseResponseData
+}
+type SearchPurchaseResponseData {
+    total: Int,
+    data: [Purchase]
+}
+
+type SearchReceiptResponseData {
+    total: Int,
+    data: [Receipt]
+}
+
+type Receipt {
+    id: String,
+    type: String,
+    userId: String,
+    receipt: String,
+    purchaseData: String,
+    validateData: String,
+    isProcessed: Boolean,
+    createTime: Int
+    updateTime: Int
+}
+
+type Purchase {
+    id: String,
+    type: String,
+    bundleId: String,
+    productId: String,
+    price: String,
+    createTime: Int,
+    updateTime: Int
+}
+
+type AppleValidateResponseData {
+    "之前是否处理过这个人同样的收据了"
+    isProcessed: Boolean,
+    "是否是个合法收据"
+    isValidated: Boolean,
+    "是否取消了，好像只有订阅有这个"
+    isCanceled: [Boolean],
+    "是否过期了，好像只有订阅有这个"
+    isExpired: [Boolean]
+}

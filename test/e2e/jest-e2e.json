@@ -1,0 +1,32 @@
+{
+  "moduleFileExtensions": [
+    "ts",
+    "tsx",
+    "js",
+    "json"
+  ],
+  "testEnvironment": "node",
+  "transform": {
+    "^.+\\.tsx?$": "ts-jest"
+  },
+  "globalSetup": "./test/e2e/setup.ts",
+  "globalTeardown": "./test/e2e/teardown.ts",
+  "testRegex": "/e2e/.*\\.(e2e-test|e2e-spec).(ts|tsx|js)$",
+  "rootDir": "../../",
+  "collectCoverage": true,
+  "collectCoverageFrom": [
+    "packages/sati/src/**/*.{js,jsx,tsx,ts}",
+    "packages/sati-user/src/**/*.{js,jsx,tsx,ts}",
+    "packages/sati-resource/src/**/*.{js,jsx,tsx,ts}",
+    "!**/*.d.ts",
+    "!**/main.ts",
+    "!**/hackLogger.ts",
+    "!**/node_modules/**",
+    "!**/vendor/**"
+  ],
+  "coverageReporters": [
+    "text",
+    "json",
+    "lcov"
+  ]
+}

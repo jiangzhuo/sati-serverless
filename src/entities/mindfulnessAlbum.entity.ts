@@ -1,6 +1,6 @@
 import {
   Column, CreateDateColumn, Entity, ManyToMany, PrimaryGeneratedColumn, UpdateDateColumn, OneToMany, JoinTable,
-  ManyToOne, JoinColumn,
+  ManyToOne, JoinColumn, RelationId,
 } from 'typeorm';
 import { SceneEntity } from "./scene.entity";
 import { UserEntity } from "./user.entity";
@@ -15,9 +15,11 @@ export class MindfulnessAlbumEntity {
   name: string;
   @Column({ type: "text", default: "" })
   description: string;
-  @ManyToMany(type => SceneEntity)
+  @ManyToMany(type => SceneEntity, scene => scene.mindfulnessAlbum)
   @JoinTable()
-  scenes: SceneEntity[];
+  sceneEntities: SceneEntity[];
+  @RelationId((mindfulnessAlbum: MindfulnessAlbumEntity) => mindfulnessAlbum.sceneEntities)
+  scenes: string[];
   @Column('float', { default: 0 })
   price: number;
   @CreateDateColumn({
@@ -44,5 +46,6 @@ export class MindfulnessAlbumEntity {
   @Column({ type: "int", default: 0 })
   validTime: number;
   @Column({ type: "text", array: true, default: '{}' })
+    // tslint:disable-next-line:variable-name
   __tag: string[];
 }

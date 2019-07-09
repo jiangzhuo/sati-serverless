@@ -37,6 +37,10 @@ export class ErrorsInterceptor implements NestInterceptor {
                 this.logger.error(`${code}\t${message}`);
                 // return throwError(new HttpException(message, code))
             }
+            if (code === '23505') {
+                // postgresql error code to mongodb error code
+                code = 11000;
+            }
             return Promise.resolve({
                 code,
                 message,
